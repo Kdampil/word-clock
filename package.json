@@ -15,9 +15,9 @@
     },
     "win": {
       "target": "nsis",
-      "icon": "assets/icon.ico" // Optional: Add an icon file if needed
+      "icon": "assets/icon.ico"
     },
-    "publish": null // Disable publishing
+    "publish": null
   },
   "dependencies": {},
   "devDependencies": {
