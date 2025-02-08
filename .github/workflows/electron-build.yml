@@ -1,27 +1,39 @@
-{
-  "name": "world-clock",
-  "version": "1.0.0",
-  "description": "World Clock Electron App",
-  "main": "main.js",
-  "scripts": {
-    "start": "electron .",
-    "build": "electron-builder --win --x64 --publish=never"
-  },
-  "build": {
-    "appId": "com.example.worldclock",
-    "productName": "WorldClock",
-    "directories": {
-      "output": "dist"
-    },
-    "win": {
-      "target": "nsis",
-      "icon": "assets/icon.ico" // Optional: Add an icon file if needed
-    },
-    "publish": null // Disable publishing
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "electron": "^27.0.0",
-    "electron-builder": "^24.0.0"
-  }
-}
+name: Electron Build and Package
+
+on:
+  push:
+    branches:
+      - main # Trigger on pushes to the main branch
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest # Use Windows environment for EXE builds
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18' # Use Node.js version 18 (or any LTS version)
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Build the Electron app
+      - name: Build Electron app
+        run: npm run build
+
+      # Step 5: Upload the packaged app as an artifact
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: electron-app
+          path: dist # Path to the packaged app
