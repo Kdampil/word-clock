@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Clock - Electron App</title>
+    <!-- Load Inter Font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f5f7;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+            overflow: hidden;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .editable-title {
+            cursor: pointer;
+            outline: none;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--title-text-color, #42526e);
+            text-align: center;
+            width: 100%;
+            max-width: 40vw;
+            font-family: 'Inter', sans-serif;
+            transition: color 0.3s ease;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            position: relative;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .add-btn,
+        .gear-btn {
+            background: var(--primary-color, #0079bf);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 1.5rem;
+            line-height: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s ease, background 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .add-btn:hover,
+        .gear-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .time-zone-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            width: 90vw;
+            max-width: 90vw;
+        }
+
+        .time-zone {
+            background: var(--block-bg-color, white);
+            border-radius: 10px;
+            padding: 15px;
+            width: 80%;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, background 0.3s ease;
+            position: relative;
+        }
+
+        .time-zone:hover {
+            transform: scale(1.02);
+        }
+
+        .time-zone h2 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--block-title-color, #42526e);
+            font-family: 'Inter', sans-serif;
+            transition: color 0.3s ease;
+        }
+
+        .time-zone p {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--time-text-color, #42526e);
+            font-family: 'Inter', sans-serif;
+            transition: color 0.3s ease;
+        }
+
+        /* Always on Top Checkbox */
+        .always-on-top {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive Scaling */
+        @media (max-width: 800px) {
+            .editable-title {
+                font-size: 1.5rem;
+            }
+
+            .time-zone {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>
+            <input type="text" class="editable-title" id="editable-title" value="🌍 World Clock" />
+        </h1>
+    </header>
+
+    <div class="controls">
+        <button class="add-btn" id="add-btn">+</button>
+        <button class="gear-btn" id="gear-btn">⚙️</button>
+    </div>
+
+    <main>
+        <div class="time-zone-container" id="time-zone-container"></div>
+    </main>
+
+    <!-- Always on Top Checkbox -->
+    <label class="always-on-top">
+        <input type="checkbox" id="always-on-top-checkbox"> Always on Top
+    </label>
+
+    <script>
+        // Electron-specific code
+        const { ipcRenderer } = require('electron');
+
+        // Toggle "Always on Top"
+        document.getElementById('always-on-top-checkbox').addEventListener('change', (event) => {
+            const isChecked = event.target.checked;
+            ipcRenderer.send('set-always-on-top', isChecked);
+        });
+
+        // Scale elements dynamically on window resize
+        let scaleFactor = 1;
+        function updateScale() {
+            const width = window.innerWidth / 1920; // Normalize to a base resolution
+            const height = window.innerHeight / 1080;
+            scaleFactor = Math.min(width, height); // Maintain aspect ratio
+            document.body.style.transform = `scale(${scaleFactor})`;
+        }
+
+        window.addEventListener('resize', updateScale);
+        updateScale(); // Initial scale
+
+        // Rest of the app's functionality remains unchanged
+        const editableTitle = document.getElementById('editable-title');
+        const addBtn = document.getElementById('add-btn');
+        const gearBtn = document.getElementById('gear-btn');
+        const timeZoneContainer = document.getElementById('time-zone-container');
+
+        // Load saved title from localStorage
+        const savedTitle = localStorage.getItem('title');
+        if (savedTitle) {
+            editableTitle.value = savedTitle;
+        }
+
+        // Save title changes to localStorage
+        editableTitle.addEventListener('input', () => {
+            localStorage.setItem('title', editableTitle.value);
+        });
+
+        // Add time zone functionality (same as before)
+        function addTimeZone(timeZone, displayName) {
+            const timeZoneDiv = document.createElement('div');
+            timeZoneDiv.classList.add('time-zone');
+            timeZoneDiv.dataset.timeZone = timeZone;
+
+            timeZoneDiv.innerHTML = `
+                <h2><input type="text" class="editable-name" value="${displayName}" /></h2>
+                <p class="time">--:--:--</p>
+                <button class="delete-btn" onclick="deleteTimeZone('${timeZone}')">&times;</button>
+            `;
+
+            const editableNameInput = timeZoneDiv.querySelector('.editable-name');
+            editableNameInput.addEventListener('input', () => {
+                const updatedDisplayName = editableNameInput.value;
+                const timeZoneIndex = savedTimeZones.findIndex((tz) => tz.timeZone === timeZone);
+                if (timeZoneIndex !== -1) {
+                    savedTimeZones[timeZoneIndex].displayName = updatedDisplayName;
+                    localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
+                }
+            });
+
+            timeZoneContainer.appendChild(timeZoneDiv);
+        }
+
+        // Function to delete a time zone
+        window.deleteTimeZone = function (timeZone) {
+            savedTimeZones = savedTimeZones.filter((tz) => tz.timeZone !== timeZone);
+            localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
+            const timeZoneDiv = document.querySelector(`[data-time-zone="${timeZone}"]`);
+            timeZoneDiv.remove();
+        };
+
+        // Update time for all time zones every second
+        function updateTime() {
+            document.querySelectorAll('.time-zone').forEach((tzDiv) => {
+                const timeZone = tzDiv.dataset.timeZone;
+                const timeElement = tzDiv.querySelector('.time');
+                const now = new Date();
+                const time = now.toLocaleTimeString('en-US', { timeZone });
+                timeElement.textContent = time;
+            });
+        }
+
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Load saved time zones from localStorage
+        let savedTimeZones = JSON.parse(localStorage.getItem('timeZones')) || [];
+        savedTimeZones.forEach(({ timeZone, displayName }) => addTimeZone(timeZone, displayName));
+
+        // Add a new time zone (same as before)
+        addBtn.addEventListener('click', () => {
+            const selectedTimeZone = prompt("Enter a time zone (e.g., 'Etc/UTC'):");
+            if (selectedTimeZone) {
+                const displayName = prompt("Enter a display name for this time zone:");
+                if (displayName) {
+                    const exists = savedTimeZones.some((tz) => tz.timeZone === selectedTimeZone);
+                    if (!exists) {
+                        const newTimeZone = { timeZone: selectedTimeZone, displayName };
+                        savedTimeZones.push(newTimeZone);
+                        localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
+                        addTimeZone(selectedTimeZone, displayName);
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
