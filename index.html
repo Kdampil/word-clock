@@ -29,10 +29,20 @@
         header {
             text-align: center;
             margin-bottom: 20px;
-            cursor: move; /* Enable dragging */
+            cursor: move; /* Visual cue for dragging */
             user-select: none; /* Prevent text selection */
             -webkit-app-region: drag; /* Make the header draggable */
             height: 40px; /* Fixed height for the header */
+            position: relative;
+        }
+
+        .draggable-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            -webkit-app-region: drag; /* Ensure this area is draggable */
         }
 
         .editable-title {
@@ -224,6 +234,7 @@
 </head>
 <body>
     <header>
+        <div class="draggable-area"></div>
         <h1>
             <span class="editable-title" id="editable-title">🌍 World Clock</span>
         </h1>
