@@ -32,7 +32,6 @@
             cursor: move; /* Enable dragging */
             user-select: none; /* Prevent text selection */
             -webkit-app-region: drag; /* Make the header draggable */
-            position: relative;
         }
 
         h1 {
@@ -55,7 +54,6 @@
             max-width: 300px;
             font-family: 'Inter', sans-serif;
             transition: color 0.3s ease;
-            -webkit-app-region: no-drag; /* Prevent dragging on the title */
         }
 
         .editable-title:focus {
@@ -92,6 +90,10 @@
         .gear-btn:hover,
         .pin-btn:hover {
             transform: scale(1.1);
+        }
+
+        .pin-btn.active {
+            background: var(--primary-hover-color, #0067a3);
         }
 
         .timezone-dropdown,
@@ -164,7 +166,7 @@
             transform: scale(1.02);
         }
 
-        .time-zone h2 input.editable-name {
+        .time-zone h2 {
             font-size: 1rem;
             margin-bottom: 5px;
             cursor: pointer;
@@ -172,11 +174,6 @@
             color: var(--block-title-color, #42526e);
             font-family: 'Inter', sans-serif;
             transition: color 0.3s ease;
-            border: none;
-            outline: none;
-            background: transparent;
-            text-align: center;
-            width: 100%;
         }
 
         .time-zone p {
@@ -295,37 +292,19 @@
     <script>
         const { ipcRenderer } = require('electron');
 
-        // Always on Top Toggle
+        // Toggle "Always on Top"
         const pinBtn = document.getElementById('pin-btn');
-        let isAlwaysOnTop = false;
-
         pinBtn.addEventListener('click', () => {
-            isAlwaysOnTop = !isAlwaysOnTop;
-            ipcRenderer.send('set-always-on-top', isAlwaysOnTop);
+            const isActive = pinBtn.classList.toggle('active');
+            const icon = isActive ? '📍' : '📌';
+            pinBtn.textContent = icon;
 
-            // Update the button icon dynamically
-            pinBtn.textContent = isAlwaysOnTop ? '📍' : '📌';
+            // Send IPC message to main process
+            ipcRenderer.send('set-always-on-top', isActive);
         });
-
-        // Editable Title
-        const editableTitle = document.getElementById('editable-title');
-        editableTitle.addEventListener('click', () => {
-            editableTitle.contentEditable = true;
-            editableTitle.focus();
-        });
-
-        editableTitle.addEventListener('blur', () => {
-            editableTitle.contentEditable = false;
-            localStorage.setItem('title', editableTitle.textContent);
-        });
-
-        // Load saved title from localStorage
-        const savedTitle = localStorage.getItem('title');
-        if (savedTitle) {
-            editableTitle.textContent = savedTitle;
-        }
 
         // Rest of the app's functionality remains unchanged
+        const editableTitle = document.getElementById('editable-title');
         const addBtn = document.getElementById('add-btn');
         const gearBtn = document.getElementById('gear-btn');
         const timezoneDropdown = document.getElementById('timezone-dropdown');
@@ -424,7 +403,6 @@
             timeZoneDiv.classList.add('time-zone');
             timeZoneDiv.dataset.timeZone = timeZone;
 
-            timeZoneDiv.innerHTML = `
             timeZoneDiv.innerHTML = `
                 <h2><input type="text" class="editable-name" value="${displayName}" /></h2>
                 <p class="time">--:--:--</p>
