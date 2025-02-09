@@ -32,13 +32,7 @@
             cursor: move; /* Enable dragging */
             user-select: none; /* Prevent text selection */
             -webkit-app-region: drag; /* Make the header draggable */
-        }
-
-        h1 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
-            font-weight: 600;
-            position: relative;
+            height: 40px; /* Fixed height for the header */
         }
 
         .editable-title {
@@ -54,11 +48,11 @@
             max-width: 300px;
             font-family: 'Inter', sans-serif;
             transition: color 0.3s ease;
+            -webkit-app-region: no-drag; /* Exclude the title text from being draggable */
         }
 
         .editable-title:focus {
             border-bottom: 1px solid var(--primary-color, #0079bf);
-            outline: none; /* Prevent default focus outline */
         }
 
         .controls {
@@ -175,7 +169,7 @@
             color: var(--block-title-color, #42526e);
             font-family: 'Inter', sans-serif;
             transition: color 0.3s ease;
-            text-align: center; /* Ensure text is centered */
+            text-align: center; /* Ensure text remains centered */
         }
 
         .time-zone p {
@@ -293,13 +287,6 @@
 
     <script>
         const { ipcRenderer } = require('electron');
-
-        // Make the window draggable
-        const win = require('@electron/remote').getCurrentWindow();
-        document.querySelector('header').addEventListener('mousedown', () => {
-            win.setIgnoreMouseEvents(false); // Ensure clicks are registered
-            win.webContents.send('drag-window');
-        });
 
         // Toggle "Always on Top"
         const pinBtn = document.getElementById('pin-btn');
