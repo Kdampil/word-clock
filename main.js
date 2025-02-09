@@ -1,12 +1,29 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow } = require('electron');
+const path = require('path');
+const Store = require('electron-store'); // For persistent storage
+
+// Initialize persistent storage
+const store = new Store();
 
 let mainWindow;
 
 function createWindow() {
+    // Retrieve saved window state
+    const savedState = store.get('windowState') || {
+        width: 350,
+        height: 450,
+        x: undefined,
+        y: undefined,
+        isMaximized: false,
+    };
+
+    // Create the browser window
     mainWindow = new BrowserWindow({
-        width: 338, // Default width
-        height: 450, // Default height
-        resizable: true, // Allow resizing
+        width: savedState.width,
+        height: savedState.height,
+        x: savedState.x,
+        y: savedState.y,
+        resizable: true,
         frame: false, // Remove the default window frame
         webPreferences: {
             nodeIntegration: true,
@@ -16,6 +33,34 @@ function createWindow() {
 
     // Load the index.html file
     mainWindow.loadFile('index.html');
+
+    // Restore maximized state
+    if (savedState.isMaximized) {
+        mainWindow.maximize();
+    }
+
+    // Track window state changes
+    let windowState = { ...savedState };
+    const saveWindowState = () => {
+        if (!mainWindow.isMaximized()) {
+            const [x, y] = mainWindow.getBounds();
+            windowState = {
+                width: mainWindow.getBounds().width,
+                height: mainWindow.getBounds().height,
+                x: x,
+                y: y,
+                isMaximized: mainWindow.isMaximized(),
+            };
+        } else {
+            windowState.isMaximized = true;
+        }
+        store.set('windowState', windowState); // Save state to persistent storage
+    };
+
+    // Save state on resize, move, and close
+    mainWindow.on('resize', saveWindowState);
+    mainWindow.on('move', saveWindowState);
+    mainWindow.on('close', saveWindowState);
 
     // Optional: Open DevTools for debugging
     // mainWindow.webContents.openDevTools();
@@ -40,12 +85,5 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();
-    }
-});
-
-// Handle "Always on Top" toggle
-ipcMain.on('set-always-on-top', (event, isAlwaysOnTop) => {
-    if (mainWindow) {
-        mainWindow.setAlwaysOnTop(isAlwaysOnTop);
     }
 });
