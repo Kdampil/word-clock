@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#ffffff">
     <title>World Clock - Time Zones</title>
     <!-- Load Inter Font from Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -23,18 +22,24 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
             transition: background 0.3s ease;
         }
 
         header {
             text-align: center;
             margin-bottom: 20px;
+            cursor: move; /* Enable dragging */
+            user-select: none; /* Prevent text selection */
+            -webkit-app-region: drag; /* Make the header draggable */
+            position: relative;
         }
 
         h1 {
-            font-size: 2rem;
+            font-size: 1.5rem;
             margin-bottom: 10px;
             font-weight: 600;
+            position: relative;
         }
 
         .editable-title {
@@ -42,14 +47,18 @@
             outline: none;
             background: none;
             border: none;
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: 600;
             color: var(--title-text-color, #42526e);
             text-align: center;
             width: 100%;
-            max-width: 400px;
+            max-width: 300px;
             font-family: 'Inter', sans-serif;
             transition: color 0.3s ease;
+        }
+
+        .editable-title:focus {
+            border-bottom: 1px solid var(--primary-color, #0079bf);
         }
 
         .controls {
@@ -74,6 +83,7 @@
             cursor: pointer;
             transition: transform 0.3s ease, background 0.3s ease;
             font-family: 'Inter', sans-serif;
+            -webkit-app-region: no-drag; /* Prevent dragging on buttons */
         }
 
         .add-btn:hover,
@@ -93,13 +103,14 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             display: none;
             z-index: 10;
+            width: 300px;
         }
 
         .timezone-dropdown select,
         .theme-dropdown input[type="color"] {
             padding: 10px;
             font-size: 1rem;
-            width: 250px;
+            width: 100%;
             border: 1px solid #ddd;
             border-radius: 5px;
             background: white;
@@ -131,13 +142,15 @@
             flex-direction: column;
             gap: 10px;
             align-items: center;
+            width: 90vw;
+            max-width: 350px;
         }
 
         .time-zone {
             background: var(--block-bg-color, white);
             border-radius: 10px;
             padding: 15px;
-            width: 300px;
+            width: 100%;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, background 0.3s ease;
@@ -149,7 +162,7 @@
         }
 
         .time-zone h2 {
-            font-size: 1.2rem;
+            font-size: 1rem;
             margin-bottom: 5px;
             cursor: pointer;
             font-weight: 500;
@@ -159,7 +172,7 @@
         }
 
         .time-zone p {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-weight: 600;
             color: var(--time-text-color, #42526e);
             font-family: 'Inter', sans-serif;
@@ -189,31 +202,49 @@
             color: #ff4d4d;
         }
 
-        /* Editable Input for Time Zone Names */
-        .editable-name {
-            outline: none;
-            border: none;
-            background: none;
-            font-size: 1.2rem;
-            font-weight: 500;
-            color: var(--block-title-color, #42526e);
+        /* Always on Top Toggle */
+        .always-on-top {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 5px;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             cursor: pointer;
-            text-align: center;
-            width: 100%;
-            font-family: 'Inter', sans-serif;
-            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-app-region: no-drag; /* Prevent dragging on the toggle */
         }
 
-        .editable-name:focus {
-            border-bottom: 1px solid var(--primary-color, #0079bf);
+        .always-on-top input[type="checkbox"] {
+            display: none;
+        }
+
+        .always-on-top label {
+            font-size: 1.2rem;
+            color: #b3bac5;
+            cursor: pointer;
+        }
+
+        .always-on-top input[type="checkbox"]:checked + label {
+            color: #0079bf;
+            content: "📍";
         }
     </style>
 </head>
 <body>
     <header>
         <h1>
-            <input type="text" class="editable-title" id="editable-title" value="🌍 World Clock" />
+            <span class="editable-title" id="editable-title">🌍 World Clock</span>
         </h1>
+
+        <!-- Always on Top Toggle -->
+        <div class="always-on-top">
+            <input type="checkbox" id="always-on-top-checkbox">
+            <label for="always-on-top-checkbox">📌</label>
+        </div>
     </header>
 
     <div class="controls">
@@ -290,6 +321,15 @@
     </main>
 
     <script>
+        const { ipcRenderer } = require('electron');
+
+        // Toggle "Always on Top"
+        document.getElementById('always-on-top-checkbox').addEventListener('change', (event) => {
+            const isChecked = event.target.checked;
+            ipcRenderer.send('set-always-on-top', isChecked);
+        });
+
+        // Rest of the app's functionality remains unchanged
         const editableTitle = document.getElementById('editable-title');
         const addBtn = document.getElementById('add-btn');
         const gearBtn = document.getElementById('gear-btn');
@@ -305,17 +345,6 @@
         const blockTitleColorPicker = document.getElementById('block-title-color-picker');
         const timeTextColorPicker = document.getElementById('time-text-color-picker');
         const restoreBtn = document.getElementById('restore-btn');
-
-        // Load saved title from localStorage
-        const savedTitle = localStorage.getItem('title');
-        if (savedTitle) {
-            editableTitle.value = savedTitle;
-        }
-
-        // Save title changes to localStorage
-        editableTitle.addEventListener('input', () => {
-            localStorage.setItem('title', editableTitle.value);
-        });
 
         // Toggle dropdown visibility
         addBtn.addEventListener('click', () => {
