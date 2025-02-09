@@ -71,7 +71,8 @@
         }
 
         .add-btn,
-        .gear-btn {
+        .gear-btn,
+        .pin-btn {
             background: var(--primary-color, #0079bf);
             color: white;
             border: none;
@@ -88,7 +89,8 @@
         }
 
         .add-btn:hover,
-        .gear-btn:hover {
+        .gear-btn:hover,
+        .pin-btn:hover {
             transform: scale(1.1);
         }
 
@@ -163,18 +165,18 @@
         }
 
         .time-zone h2 input.editable-name {
-            font-size: 1rem; /* Restore original font size */
+            font-size: 1rem;
             margin-bottom: 5px;
             cursor: pointer;
             font-weight: 500;
             color: var(--block-title-color, #42526e);
             font-family: 'Inter', sans-serif;
             transition: color 0.3s ease;
-            border: none; /* Remove bounding box */
-            outline: none; /* Remove focus outline */
-            background: transparent; /* Ensure no background */
-            text-align: center; /* Center the text */
-            width: 100%; /* Ensure it spans the full width */
+            border: none;
+            outline: none;
+            background: transparent;
+            text-align: center;
+            width: 100%;
         }
 
         .time-zone p {
@@ -207,28 +209,6 @@
         .delete-btn:hover {
             color: #ff4d4d;
         }
-
-        /* Always on Top Toggle */
-        .always-on-top {
-            position: absolute;
-            top: 10px;
-            left: 10px; /* Ensure it's in the top-left corner */
-            background: white;
-            padding: 5px;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            -webkit-app-region: no-drag; /* Prevent dragging on the toggle */
-        }
-
-        .always-on-top label {
-            font-size: 1.2rem;
-            color: #b3bac5;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
@@ -236,17 +216,12 @@
         <h1>
             <span class="editable-title" id="editable-title">🌍 World Clock</span>
         </h1>
-
-        <!-- Always on Top Toggle -->
-        <div class="always-on-top">
-            <input type="checkbox" id="always-on-top-checkbox">
-            <label for="always-on-top-checkbox">📌</label>
-        </div>
     </header>
 
     <div class="controls">
         <button class="add-btn" id="add-btn">+</button>
         <button class="gear-btn" id="gear-btn">⚙️</button>
+        <button class="pin-btn" id="pin-btn">📌</button>
 
         <!-- Time Zone Dropdown -->
         <div class="timezone-dropdown" id="timezone-dropdown">
@@ -320,14 +295,16 @@
     <script>
         const { ipcRenderer } = require('electron');
 
-        // Toggle "Always on Top"
-        document.getElementById('always-on-top-checkbox').addEventListener('change', (event) => {
-            const isChecked = event.target.checked;
-            ipcRenderer.send('set-always-on-top', isChecked);
+        // Always on Top Toggle
+        const pinBtn = document.getElementById('pin-btn');
+        let isAlwaysOnTop = false;
 
-            // Update the label text dynamically
-            const label = document.querySelector('.always-on-top label');
-            label.textContent = isChecked ? '📍' : '📌';
+        pinBtn.addEventListener('click', () => {
+            isAlwaysOnTop = !isAlwaysOnTop;
+            ipcRenderer.send('set-always-on-top', isAlwaysOnTop);
+
+            // Update the button icon dynamically
+            pinBtn.textContent = isAlwaysOnTop ? '📍' : '📌';
         });
 
         // Editable Title
@@ -447,6 +424,7 @@
             timeZoneDiv.classList.add('time-zone');
             timeZoneDiv.dataset.timeZone = timeZone;
 
+            timeZoneDiv.innerHTML = `
             timeZoneDiv.innerHTML = `
                 <h2><input type="text" class="editable-name" value="${displayName}" /></h2>
                 <p class="time">--:--:--</p>
