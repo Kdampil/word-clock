@@ -305,18 +305,22 @@
     </main>
 
     <script>
-        const { ipcRenderer } = require('electron');
+<script>
+    const { ipcRenderer } = require('electron');
 
-        // Toggle "Always on Top"
-        const pinBtn = document.getElementById('pin-btn');
-        pinBtn.addEventListener('click', () => {
-            const isActive = pinBtn.classList.toggle('active');
-            const icon = isActive ? '📍' : '📌';
-            pinBtn.textContent = icon;
+    // Toggle "Always on Top"
+    const pinBtn = document.getElementById('pin-btn');
+    pinBtn.addEventListener('click', () => {
+        const isActive = pinBtn.classList.toggle('active');
+        const icon = isActive ? '📍' : '📌';
+        pinBtn.textContent = icon;
 
-            // Send IPC message to main process
-            ipcRenderer.send('set-always-on-top', isActive);
-        });
+        // Send IPC message to main process
+        ipcRenderer.send('set-always-on-top', isActive);
+    });
+
+    // Rest of the code remains unchanged...
+</script>
 
         // Editable Title
         const editableTitle = document.getElementById('editable-title');
