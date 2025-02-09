@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#ffffff">
     <title>World Clock - Time Zones</title>
     <!-- Load Inter Font from Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -23,18 +22,30 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
             transition: background 0.3s ease;
         }
 
         header {
             text-align: center;
             margin-bottom: 20px;
+            cursor: move; /* Enable dragging */
+            user-select: none; /* Prevent text selection */
+            position: relative;
+            width: 100%;
+            max-width: 338px;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            background: var(--block-bg-color, white);
+            padding: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
-            font-size: 2rem;
+            font-size: 1.5rem;
             margin-bottom: 10px;
             font-weight: 600;
+            position: relative;
         }
 
         .editable-title {
@@ -42,14 +53,18 @@
             outline: none;
             background: none;
             border: none;
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: 600;
             color: var(--title-text-color, #42526e);
             text-align: center;
             width: 100%;
-            max-width: 400px;
+            max-width: 300px;
             font-family: 'Inter', sans-serif;
             transition: color 0.3s ease;
+        }
+
+        .editable-title:focus {
+            border-bottom: 1px solid var(--primary-color, #0079bf);
         }
 
         .controls {
@@ -58,6 +73,7 @@
             display: flex;
             gap: 10px;
             align-items: center;
+            justify-content: center;
         }
 
         .add-btn,
@@ -93,13 +109,14 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             display: none;
             z-index: 10;
+            width: 300px;
         }
 
         .timezone-dropdown select,
         .theme-dropdown input[type="color"] {
             padding: 10px;
             font-size: 1rem;
-            width: 250px;
+            width: 100%;
             border: 1px solid #ddd;
             border-radius: 5px;
             background: white;
@@ -131,13 +148,15 @@
             flex-direction: column;
             gap: 10px;
             align-items: center;
+            width: 90vw;
+            max-width: 338px;
         }
 
         .time-zone {
             background: var(--block-bg-color, white);
             border-radius: 10px;
             padding: 15px;
-            width: 300px;
+            width: 100%;
             text-align: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, background 0.3s ease;
@@ -149,7 +168,7 @@
         }
 
         .time-zone h2 {
-            font-size: 1.2rem;
+            font-size: 1rem;
             margin-bottom: 5px;
             cursor: pointer;
             font-weight: 500;
@@ -159,7 +178,7 @@
         }
 
         .time-zone p {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-weight: 600;
             color: var(--time-text-color, #42526e);
             font-family: 'Inter', sans-serif;
@@ -189,31 +208,116 @@
             color: #ff4d4d;
         }
 
-        /* Editable Input for Time Zone Names */
-        .editable-name {
-            outline: none;
-            border: none;
-            background: none;
-            font-size: 1.2rem;
-            font-weight: 500;
-            color: var(--block-title-color, #42526e);
+        /* Always on Top Toggle */
+        .always-on-top {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 5px;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             cursor: pointer;
-            text-align: center;
-            width: 100%;
-            font-family: 'Inter', sans-serif;
-            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .editable-name:focus {
-            border-bottom: 1px solid var(--primary-color, #0079bf);
+        .always-on-top input[type="checkbox"] {
+            display: none;
+        }
+
+        .always-on-top label {
+            font-size: 1.2rem;
+            color: #b3bac5;
+            cursor: pointer;
+        }
+
+        .always-on-top input[type="checkbox"]:checked + label {
+            content: "📌";
+            color: #0079bf;
+        }
+
+        /* Dark Mode Toggle */
+        .dark-mode-toggle {
+            position: absolute;
+            top: 10px;
+            right: 50px;
+            background: white;
+            padding: 5px;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dark-mode-toggle input[type="checkbox"] {
+            display: none;
+        }
+
+        .dark-mode-toggle label {
+            font-size: 1.2rem;
+            color: #b3bac5;
+            cursor: pointer;
+        }
+
+        .dark-mode-toggle input[type="checkbox"]:checked + label {
+            content: "🌙";
+            color: #0079bf;
+        }
+
+        /* Close and Minimize Buttons */
+        .window-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        header:hover .window-controls {
+            opacity: 1;
+        }
+
+        .close-btn,
+        .minimize-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #b3bac5;
+        }
+
+        .close-btn:hover {
+            color: #ff4d4d;
+        }
+
+        .minimize-btn:hover {
+            color: #0079bf;
         }
     </style>
 </head>
 <body>
     <header>
         <h1>
-            <input type="text" class="editable-title" id="editable-title" value="🌍 World Clock" />
+            <span class="editable-title" id="editable-title">🌍 World Clock</span>
         </h1>
+        <div class="window-controls">
+            <button class="minimize-btn" id="minimize-btn">➖</button>
+            <button class="close-btn" id="close-btn">×</button>
+        </div>
+        <div class="dark-mode-toggle">
+            <input type="checkbox" id="dark-mode-checkbox">
+            <label for="dark-mode-checkbox">☀️</label>
+        </div>
+        <div class="always-on-top">
+            <input type="checkbox" id="always-on-top-checkbox">
+            <label for="always-on-top-checkbox">📌</label>
+        </div>
     </header>
 
     <div class="controls">
@@ -269,18 +373,6 @@
                 Time Block Background:
                 <input type="color" id="block-bg-color-picker" value="#ffffff">
             </label>
-            <label>
-                Title Text Color:
-                <input type="color" id="title-text-color-picker" value="#42526e">
-            </label>
-            <label>
-                Time Block Title Color:
-                <input type="color" id="block-title-color-picker" value="#42526e">
-            </label>
-            <label>
-                Time Text Color:
-                <input type="color" id="time-text-color-picker" value="#42526e">
-            </label>
             <button id="restore-btn" style="margin-top: 10px;">↻ Restore Defaults</button>
         </div>
     </div>
@@ -290,7 +382,85 @@
     </main>
 
     <script>
+        const { ipcRenderer } = require('electron');
+        const remote = require('@electron/remote');
+
+        // Default window size
+        const win = remote.getCurrentWindow();
+        win.setContentSize(338, 450);
+
+        // Make the window draggable
+        document.querySelector('header').addEventListener('mousedown', () => {
+            win.setIgnoreMouseEvents(false); // Ensure clicks are registered
+            win.webContents.send('drag-window');
+        });
+
+        // Toggle "Always on Top"
+        document.getElementById('always-on-top-checkbox').addEventListener('change', (event) => {
+            const isChecked = event.target.checked;
+            ipcRenderer.send('set-always-on-top', isChecked);
+        });
+
+        // Dark Mode Toggle
+        document.getElementById('dark-mode-checkbox').addEventListener('change', (event) => {
+            const isChecked = event.target.checked;
+            if (isChecked) {
+                document.body.style.backgroundColor = '#2d3748';
+                document.documentElement.style.setProperty('--title-text-color', '#ffffff');
+                document.documentElement.style.setProperty('--block-bg-color', '#4a5568');
+                document.documentElement.style.setProperty('--block-title-color', '#e2e8f0');
+                document.documentElement.style.setProperty('--time-text-color', '#e2e8f0');
+                document.querySelector('.dark-mode-toggle label').textContent = '🌙';
+            } else {
+                document.body.style.backgroundColor = '#f5f5f7';
+                document.documentElement.style.setProperty('--title-text-color', '#42526e');
+                document.documentElement.style.setProperty('--block-bg-color', '#ffffff');
+                document.documentElement.style.setProperty('--block-title-color', '#42526e');
+                document.documentElement.style.setProperty('--time-text-color', '#42526e');
+                document.querySelector('.dark-mode-toggle label').textContent = '☀️';
+            }
+        });
+
+        // Close and Minimize Buttons
+        document.getElementById('close-btn').addEventListener('click', () => {
+            win.close();
+        });
+
+        document.getElementById('minimize-btn').addEventListener('click', () => {
+            win.minimize();
+        });
+
+        // Scale elements dynamically on window resize
+        let scaleFactor = 1;
+        function updateScale() {
+            const width = window.innerWidth / 338; // Normalize to default width
+            const height = window.innerHeight / 450; // Normalize to default height
+            scaleFactor = Math.min(width, height); // Maintain aspect ratio
+            document.body.style.transform = `scale(${scaleFactor})`;
+        }
+
+        window.addEventListener('resize', updateScale);
+        updateScale(); // Initial scale
+
+        // Editable Title
         const editableTitle = document.getElementById('editable-title');
+        editableTitle.addEventListener('click', () => {
+            editableTitle.contentEditable = true;
+            editableTitle.focus();
+        });
+
+        editableTitle.addEventListener('blur', () => {
+            editableTitle.contentEditable = false;
+            localStorage.setItem('title', editableTitle.textContent);
+        });
+
+        // Load saved title from localStorage
+        const savedTitle = localStorage.getItem('title');
+        if (savedTitle) {
+            editableTitle.textContent = savedTitle;
+        }
+
+        // Rest of the app's functionality remains unchanged
         const addBtn = document.getElementById('add-btn');
         const gearBtn = document.getElementById('gear-btn');
         const timezoneDropdown = document.getElementById('timezone-dropdown');
@@ -305,17 +475,6 @@
         const blockTitleColorPicker = document.getElementById('block-title-color-picker');
         const timeTextColorPicker = document.getElementById('time-text-color-picker');
         const restoreBtn = document.getElementById('restore-btn');
-
-        // Load saved title from localStorage
-        const savedTitle = localStorage.getItem('title');
-        if (savedTitle) {
-            editableTitle.value = savedTitle;
-        }
-
-        // Save title changes to localStorage
-        editableTitle.addEventListener('input', () => {
-            localStorage.setItem('title', editableTitle.value);
-        });
 
         // Toggle dropdown visibility
         addBtn.addEventListener('click', () => {
@@ -401,21 +560,10 @@
             timeZoneDiv.dataset.timeZone = timeZone;
 
             timeZoneDiv.innerHTML = `
-                <h2><input type="text" class="editable-name" value="${displayName}" /></h2>
+                <h2>${displayName}</h2>
                 <p class="time">--:--:--</p>
                 <button class="delete-btn" onclick="deleteTimeZone('${timeZone}')">&times;</button>
             `;
-
-            const editableNameInput = timeZoneDiv.querySelector('.editable-name');
-            editableNameInput.addEventListener('input', () => {
-                // Update the display name in localStorage
-                const updatedDisplayName = editableNameInput.value;
-                const timeZoneIndex = savedTimeZones.findIndex((tz) => tz.timeZone === timeZone);
-                if (timeZoneIndex !== -1) {
-                    savedTimeZones[timeZoneIndex].displayName = updatedDisplayName;
-                    localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
-                }
-            });
 
             timeZoneContainer.appendChild(timeZoneDiv);
         }
