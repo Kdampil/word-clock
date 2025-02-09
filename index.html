@@ -144,6 +144,8 @@
             align-items: center;
             width: 90vw;
             max-width: 350px;
+            overflow-y: auto; /* Enable scrolling if content overflows */
+            padding: 10px 0;
         }
 
         .time-zone {
@@ -287,6 +289,14 @@
 
     <script>
         const { ipcRenderer } = require('electron');
+        const remote = require('@electron/remote');
+
+        // Make the window draggable
+        const win = remote.getCurrentWindow();
+        document.querySelector('header').addEventListener('mousedown', () => {
+            win.setIgnoreMouseEvents(false); // Ensure clicks are registered
+            win.webContents.send('drag-window');
+        });
 
         // Toggle "Always on Top"
         const pinBtn = document.getElementById('pin-btn');
@@ -405,6 +415,9 @@
                 savedTimeZones.push(newTimeZone);
                 localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
                 addTimeZone(selectedTimeZone, displayName);
+
+                // Adjust window height dynamically
+                adjustWindowHeight();
             }
 
             timezoneDropdown.style.display = 'none'; // Hide dropdown after adding
@@ -431,6 +444,9 @@
             localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
             const timeZoneDiv = document.querySelector(`[data-time-zone="${timeZone}"]`);
             timeZoneDiv.remove();
+
+            // Adjust window height dynamically
+            adjustWindowHeight();
         };
 
         // Update time for all time zones every second
@@ -535,6 +551,17 @@
                 .toString(16)
                 .slice(1)}`;
         }
+
+        // Function to adjust window height dynamically
+        function adjustWindowHeight() {
+            const containerHeight = timeZoneContainer.scrollHeight + 200; // Add some padding
+            const minHeight = 450; // Minimum height of the window
+            const newHeight = Math.max(containerHeight, minHeight);
+            win.setSize(338, newHeight); // Set the new height while keeping the width fixed
+        }
+
+        // Initial adjustment of window height
+        adjustWindowHeight();
     </script>
 </body>
 </html>
