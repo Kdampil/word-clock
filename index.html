@@ -144,8 +144,6 @@
             align-items: center;
             width: 90vw;
             max-width: 350px;
-            overflow-y: auto; /* Enable scrolling if content overflows */
-            padding: 10px 0;
         }
 
         .time-zone {
@@ -172,6 +170,24 @@
             font-family: 'Inter', sans-serif;
             transition: color 0.3s ease;
             text-align: center; /* Ensure text remains centered */
+        }
+
+        .time-zone h2 span {
+            cursor: pointer;
+            outline: none;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--block-title-color, #42526e);
+            text-align: center;
+            width: 100%;
+            font-family: 'Inter', sans-serif;
+            transition: color 0.3s ease;
+        }
+
+        .time-zone h2 span:focus {
+            border-bottom: 1px solid var(--primary-color, #0079bf);
         }
 
         .time-zone p {
@@ -289,14 +305,6 @@
 
     <script>
         const { ipcRenderer } = require('electron');
-        const remote = require('@electron/remote');
-
-        // Make the window draggable
-        const win = remote.getCurrentWindow();
-        document.querySelector('header').addEventListener('mousedown', () => {
-            win.setIgnoreMouseEvents(false); // Ensure clicks are registered
-            win.webContents.send('drag-window');
-        });
 
         // Toggle "Always on Top"
         const pinBtn = document.getElementById('pin-btn');
@@ -415,9 +423,6 @@
                 savedTimeZones.push(newTimeZone);
                 localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
                 addTimeZone(selectedTimeZone, displayName);
-
-                // Adjust window height dynamically
-                adjustWindowHeight();
             }
 
             timezoneDropdown.style.display = 'none'; // Hide dropdown after adding
@@ -430,10 +435,20 @@
             timeZoneDiv.dataset.timeZone = timeZone;
 
             timeZoneDiv.innerHTML = `
-                <h2>${displayName}</h2>
+                <h2><span contenteditable="true" class="editable-name">${displayName}</span></h2>
                 <p class="time">--:--:--</p>
                 <button class="delete-btn" onclick="deleteTimeZone('${timeZone}')">&times;</button>
             `;
+
+            const editableNameSpan = timeZoneDiv.querySelector('.editable-name');
+            editableNameSpan.addEventListener('blur', () => {
+                const updatedDisplayName = editableNameSpan.textContent;
+                const timeZoneIndex = savedTimeZones.findIndex((tz) => tz.timeZone === timeZone);
+                if (timeZoneIndex !== -1) {
+                    savedTimeZones[timeZoneIndex].displayName = updatedDisplayName;
+                    localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
+                }
+            });
 
             timeZoneContainer.appendChild(timeZoneDiv);
         }
@@ -444,9 +459,6 @@
             localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
             const timeZoneDiv = document.querySelector(`[data-time-zone="${timeZone}"]`);
             timeZoneDiv.remove();
-
-            // Adjust window height dynamically
-            adjustWindowHeight();
         };
 
         // Update time for all time zones every second
@@ -551,17 +563,6 @@
                 .toString(16)
                 .slice(1)}`;
         }
-
-        // Function to adjust window height dynamically
-        function adjustWindowHeight() {
-            const containerHeight = timeZoneContainer.scrollHeight + 200; // Add some padding
-            const minHeight = 450; // Minimum height of the window
-            const newHeight = Math.max(containerHeight, minHeight);
-            win.setSize(338, newHeight); // Set the new height while keeping the width fixed
-        }
-
-        // Initial adjustment of window height
-        adjustWindowHeight();
     </script>
 </body>
 </html>
