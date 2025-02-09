@@ -32,13 +32,6 @@
             cursor: move; /* Enable dragging */
             user-select: none; /* Prevent text selection */
             position: relative;
-            width: 100%;
-            max-width: 338px;
-            border-top-left-radius: 15px;
-            border-top-right-radius: 15px;
-            background: var(--block-bg-color, white);
-            padding: 10px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
@@ -73,11 +66,13 @@
             display: flex;
             gap: 10px;
             align-items: center;
-            justify-content: center;
         }
 
         .add-btn,
-        .gear-btn {
+        .gear-btn,
+        .dark-mode-btn,
+        .close-btn,
+        .minimize-btn {
             background: var(--primary-color, #0079bf);
             color: white;
             border: none;
@@ -93,8 +88,28 @@
         }
 
         .add-btn:hover,
-        .gear-btn:hover {
+        .gear-btn:hover,
+        .dark-mode-btn:hover {
             transform: scale(1.1);
+        }
+
+        .close-btn,
+        .minimize-btn {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        header:hover .close-btn,
+        header:hover .minimize-btn {
+            opacity: 1;
+        }
+
+        .close-btn {
+            background: #ff4d4d;
+        }
+
+        .minimize-btn {
+            background: #ffcc00;
         }
 
         .timezone-dropdown,
@@ -149,7 +164,7 @@
             gap: 10px;
             align-items: center;
             width: 90vw;
-            max-width: 338px;
+            max-width: 350px;
         }
 
         .time-zone {
@@ -212,7 +227,7 @@
         .always-on-top {
             position: absolute;
             top: 10px;
-            right: 10px;
+            left: 10px;
             background: white;
             padding: 5px;
             border-radius: 50%;
@@ -234,70 +249,24 @@
         }
 
         .always-on-top input[type="checkbox"]:checked + label {
-            content: "📌";
             color: #0079bf;
+            content: "📍";
         }
 
         /* Dark Mode Toggle */
-        .dark-mode-toggle {
-            position: absolute;
-            top: 10px;
-            right: 50px;
-            background: white;
-            padding: 5px;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .dark-mode-btn {
+            background: var(--primary-color, #0079bf);
+            color: white;
         }
 
-        .dark-mode-toggle input[type="checkbox"] {
-            display: none;
+        .dark-mode-btn.dark-mode-active {
+            background: #333;
         }
 
-        .dark-mode-toggle label {
-            font-size: 1.2rem;
-            color: #b3bac5;
-            cursor: pointer;
-        }
-
-        .dark-mode-toggle input[type="checkbox"]:checked + label {
-            content: "🌙";
-            color: #0079bf;
-        }
-
-        /* Close and Minimize Buttons */
-        .window-controls {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            gap: 10px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        header:hover .window-controls {
-            opacity: 1;
-        }
-
-        .close-btn,
-        .minimize-btn {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: #b3bac5;
-        }
-
-        .close-btn:hover {
-            color: #ff4d4d;
-        }
-
-        .minimize-btn:hover {
-            color: #0079bf;
+        /* Responsive Scaling */
+        body {
+            transform-origin: top left;
+            transition: transform 0.3s ease;
         }
     </style>
 </head>
@@ -307,12 +276,8 @@
             <span class="editable-title" id="editable-title">🌍 World Clock</span>
         </h1>
         <div class="window-controls">
-            <button class="minimize-btn" id="minimize-btn">➖</button>
+            <button class="minimize-btn" id="minimize-btn">-</button>
             <button class="close-btn" id="close-btn">×</button>
-        </div>
-        <div class="dark-mode-toggle">
-            <input type="checkbox" id="dark-mode-checkbox">
-            <label for="dark-mode-checkbox">☀️</label>
         </div>
         <div class="always-on-top">
             <input type="checkbox" id="always-on-top-checkbox">
@@ -323,6 +288,7 @@
     <div class="controls">
         <button class="add-btn" id="add-btn">+</button>
         <button class="gear-btn" id="gear-btn">⚙️</button>
+        <button class="dark-mode-btn" id="dark-mode-btn">☀️</button>
 
         <!-- Time Zone Dropdown -->
         <div class="timezone-dropdown" id="timezone-dropdown">
@@ -373,6 +339,18 @@
                 Time Block Background:
                 <input type="color" id="block-bg-color-picker" value="#ffffff">
             </label>
+            <label>
+                Title Text Color:
+                <input type="color" id="title-text-color-picker" value="#42526e">
+            </label>
+            <label>
+                Time Block Title Color:
+                <input type="color" id="block-title-color-picker" value="#42526e">
+            </label>
+            <label>
+                Time Text Color:
+                <input type="color" id="time-text-color-picker" value="#42526e">
+            </label>
             <button id="restore-btn" style="margin-top: 10px;">↻ Restore Defaults</button>
         </div>
     </div>
@@ -386,13 +364,18 @@
         const remote = require('@electron/remote');
 
         // Default window size
+        const defaultWidth = 338;
+        const defaultHeight = 450;
+
+        // Set initial window size and rounded corners
         const win = remote.getCurrentWindow();
-        win.setContentSize(338, 450);
+        win.setSize(defaultWidth, defaultHeight);
+        win.setRoundedCorners(true);
 
         // Make the window draggable
         document.querySelector('header').addEventListener('mousedown', () => {
             win.setIgnoreMouseEvents(false); // Ensure clicks are registered
-            win.webContents.send('drag-window');
+            ipcRenderer.send('drag-window');
         });
 
         // Toggle "Always on Top"
@@ -401,40 +384,35 @@
             ipcRenderer.send('set-always-on-top', isChecked);
         });
 
-        // Dark Mode Toggle
-        document.getElementById('dark-mode-checkbox').addEventListener('change', (event) => {
-            const isChecked = event.target.checked;
-            if (isChecked) {
-                document.body.style.backgroundColor = '#2d3748';
-                document.documentElement.style.setProperty('--title-text-color', '#ffffff');
-                document.documentElement.style.setProperty('--block-bg-color', '#4a5568');
-                document.documentElement.style.setProperty('--block-title-color', '#e2e8f0');
-                document.documentElement.style.setProperty('--time-text-color', '#e2e8f0');
-                document.querySelector('.dark-mode-toggle label').textContent = '🌙';
-            } else {
-                document.body.style.backgroundColor = '#f5f5f7';
-                document.documentElement.style.setProperty('--title-text-color', '#42526e');
-                document.documentElement.style.setProperty('--block-bg-color', '#ffffff');
-                document.documentElement.style.setProperty('--block-title-color', '#42526e');
-                document.documentElement.style.setProperty('--time-text-color', '#42526e');
-                document.querySelector('.dark-mode-toggle label').textContent = '☀️';
-            }
-        });
-
         // Close and Minimize Buttons
         document.getElementById('close-btn').addEventListener('click', () => {
-            win.close();
+            ipcRenderer.send('close-window');
         });
 
         document.getElementById('minimize-btn').addEventListener('click', () => {
-            win.minimize();
+            ipcRenderer.send('minimize-window');
+        });
+
+        // Dark Mode Toggle
+        const darkModeBtn = document.getElementById('dark-mode-btn');
+        let isDarkMode = false;
+
+        darkModeBtn.addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            document.body.style.backgroundColor = isDarkMode ? '#1f232a' : '#f5f5f7';
+            document.documentElement.style.setProperty('--title-text-color', isDarkMode ? '#ffffff' : '#42526e');
+            document.documentElement.style.setProperty('--block-bg-color', isDarkMode ? '#2d333b' : '#ffffff');
+            document.documentElement.style.setProperty('--block-title-color', isDarkMode ? '#ffffff' : '#42526e');
+            document.documentElement.style.setProperty('--time-text-color', isDarkMode ? '#ffffff' : '#42526e');
+            darkModeBtn.textContent = isDarkMode ? '🌙' : '☀️';
+            darkModeBtn.classList.toggle('dark-mode-active', isDarkMode);
         });
 
         // Scale elements dynamically on window resize
         let scaleFactor = 1;
         function updateScale() {
-            const width = window.innerWidth / 338; // Normalize to default width
-            const height = window.innerHeight / 450; // Normalize to default height
+            const width = window.innerWidth / defaultWidth;
+            const height = window.innerHeight / defaultHeight;
             scaleFactor = Math.min(width, height); // Maintain aspect ratio
             document.body.style.transform = `scale(${scaleFactor})`;
         }
@@ -560,10 +538,21 @@
             timeZoneDiv.dataset.timeZone = timeZone;
 
             timeZoneDiv.innerHTML = `
-                <h2>${displayName}</h2>
+                <h2><input type="text" class="editable-name" value="${displayName}" /></h2>
                 <p class="time">--:--:--</p>
                 <button class="delete-btn" onclick="deleteTimeZone('${timeZone}')">&times;</button>
             `;
+
+            const editableNameInput = timeZoneDiv.querySelector('.editable-name');
+            editableNameInput.addEventListener('input', () => {
+                // Update the display name in localStorage
+                const updatedDisplayName = editableNameInput.value;
+                const timeZoneIndex = savedTimeZones.findIndex((tz) => tz.timeZone === timeZone);
+                if (timeZoneIndex !== -1) {
+                    savedTimeZones[timeZoneIndex].displayName = updatedDisplayName;
+                    localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
+                }
+            });
 
             timeZoneContainer.appendChild(timeZoneDiv);
         }
