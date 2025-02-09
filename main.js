@@ -4,8 +4,8 @@ let mainWindow;
 
 function createWindow() {
     mainWindow = new BrowserWindow({
-        width: 1024,
-        height: 768,
+        width: 338,
+        height: 450,
         frame: false, // Borderless window
         webPreferences: {
             nodeIntegration: true,
