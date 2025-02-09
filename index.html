@@ -55,6 +55,7 @@
             max-width: 300px;
             font-family: 'Inter', sans-serif;
             transition: color 0.3s ease;
+            -webkit-app-region: no-drag; /* Prevent dragging on the title */
         }
 
         .editable-title:focus {
@@ -161,14 +162,19 @@
             transform: scale(1.02);
         }
 
-        .time-zone h2 {
-            font-size: 1rem;
+        .time-zone h2 input.editable-name {
+            font-size: 1rem; /* Restore original font size */
             margin-bottom: 5px;
             cursor: pointer;
             font-weight: 500;
             color: var(--block-title-color, #42526e);
             font-family: 'Inter', sans-serif;
             transition: color 0.3s ease;
+            border: none; /* Remove bounding box */
+            outline: none; /* Remove focus outline */
+            background: transparent; /* Ensure no background */
+            text-align: center; /* Center the text */
+            width: 100%; /* Ensure it spans the full width */
         }
 
         .time-zone p {
@@ -206,7 +212,7 @@
         .always-on-top {
             position: absolute;
             top: 10px;
-            left: 10px;
+            left: 10px; /* Ensure it's in the top-left corner */
             background: white;
             padding: 5px;
             border-radius: 50%;
@@ -218,19 +224,10 @@
             -webkit-app-region: no-drag; /* Prevent dragging on the toggle */
         }
 
-        .always-on-top input[type="checkbox"] {
-            display: none;
-        }
-
         .always-on-top label {
             font-size: 1.2rem;
             color: #b3bac5;
             cursor: pointer;
-        }
-
-        .always-on-top input[type="checkbox"]:checked + label {
-            color: #0079bf;
-            content: "📍";
         }
     </style>
 </head>
@@ -327,10 +324,31 @@
         document.getElementById('always-on-top-checkbox').addEventListener('change', (event) => {
             const isChecked = event.target.checked;
             ipcRenderer.send('set-always-on-top', isChecked);
+
+            // Update the label text dynamically
+            const label = document.querySelector('.always-on-top label');
+            label.textContent = isChecked ? '📍' : '📌';
         });
 
-        // Rest of the app's functionality remains unchanged
+        // Editable Title
         const editableTitle = document.getElementById('editable-title');
+        editableTitle.addEventListener('click', () => {
+            editableTitle.contentEditable = true;
+            editableTitle.focus();
+        });
+
+        editableTitle.addEventListener('blur', () => {
+            editableTitle.contentEditable = false;
+            localStorage.setItem('title', editableTitle.textContent);
+        });
+
+        // Load saved title from localStorage
+        const savedTitle = localStorage.getItem('title');
+        if (savedTitle) {
+            editableTitle.textContent = savedTitle;
+        }
+
+        // Rest of the app's functionality remains unchanged
         const addBtn = document.getElementById('add-btn');
         const gearBtn = document.getElementById('gear-btn');
         const timezoneDropdown = document.getElementById('timezone-dropdown');
