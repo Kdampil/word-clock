@@ -31,7 +31,6 @@
             margin-bottom: 20px;
             cursor: move; /* Enable dragging */
             user-select: none; /* Prevent text selection */
-            position: relative;
         }
 
         h1 {
@@ -69,10 +68,7 @@
         }
 
         .add-btn,
-        .gear-btn,
-        .dark-mode-btn,
-        .close-btn,
-        .minimize-btn {
+        .gear-btn {
             background: var(--primary-color, #0079bf);
             color: white;
             border: none;
@@ -88,28 +84,8 @@
         }
 
         .add-btn:hover,
-        .gear-btn:hover,
-        .dark-mode-btn:hover {
+        .gear-btn:hover {
             transform: scale(1.1);
-        }
-
-        .close-btn,
-        .minimize-btn {
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        header:hover .close-btn,
-        header:hover .minimize-btn {
-            opacity: 1;
-        }
-
-        .close-btn {
-            background: #ff4d4d;
-        }
-
-        .minimize-btn {
-            background: #ffcc00;
         }
 
         .timezone-dropdown,
@@ -227,7 +203,7 @@
         .always-on-top {
             position: absolute;
             top: 10px;
-            left: 10px;
+            right: 10px;
             background: white;
             padding: 5px;
             border-radius: 50%;
@@ -250,23 +226,6 @@
 
         .always-on-top input[type="checkbox"]:checked + label {
             color: #0079bf;
-            content: "📍";
-        }
-
-        /* Dark Mode Toggle */
-        .dark-mode-btn {
-            background: var(--primary-color, #0079bf);
-            color: white;
-        }
-
-        .dark-mode-btn.dark-mode-active {
-            background: #333;
-        }
-
-        /* Responsive Scaling */
-        body {
-            transform-origin: top left;
-            transition: transform 0.3s ease;
         }
     </style>
 </head>
@@ -275,20 +234,11 @@
         <h1>
             <span class="editable-title" id="editable-title">🌍 World Clock</span>
         </h1>
-        <div class="window-controls">
-            <button class="minimize-btn" id="minimize-btn">-</button>
-            <button class="close-btn" id="close-btn">×</button>
-        </div>
-        <div class="always-on-top">
-            <input type="checkbox" id="always-on-top-checkbox">
-            <label for="always-on-top-checkbox">📌</label>
-        </div>
     </header>
 
     <div class="controls">
         <button class="add-btn" id="add-btn">+</button>
         <button class="gear-btn" id="gear-btn">⚙️</button>
-        <button class="dark-mode-btn" id="dark-mode-btn">☀️</button>
 
         <!-- Time Zone Dropdown -->
         <div class="timezone-dropdown" id="timezone-dropdown">
@@ -359,23 +309,21 @@
         <div class="time-zone-container" id="time-zone-container"></div>
     </main>
 
+    <!-- Always on Top Toggle -->
+    <div class="always-on-top">
+        <input type="checkbox" id="always-on-top-checkbox">
+        <label for="always-on-top-checkbox">📌</label>
+    </div>
+
     <script>
         const { ipcRenderer } = require('electron');
         const remote = require('@electron/remote');
 
-        // Default window size
-        const defaultWidth = 338;
-        const defaultHeight = 450;
-
-        // Set initial window size and rounded corners
-        const win = remote.getCurrentWindow();
-        win.setSize(defaultWidth, defaultHeight);
-        win.setRoundedCorners(true);
-
         // Make the window draggable
+        const win = remote.getCurrentWindow();
         document.querySelector('header').addEventListener('mousedown', () => {
             win.setIgnoreMouseEvents(false); // Ensure clicks are registered
-            ipcRenderer.send('drag-window');
+            win.webContents.send('drag-window');
         });
 
         // Toggle "Always on Top"
@@ -384,35 +332,11 @@
             ipcRenderer.send('set-always-on-top', isChecked);
         });
 
-        // Close and Minimize Buttons
-        document.getElementById('close-btn').addEventListener('click', () => {
-            ipcRenderer.send('close-window');
-        });
-
-        document.getElementById('minimize-btn').addEventListener('click', () => {
-            ipcRenderer.send('minimize-window');
-        });
-
-        // Dark Mode Toggle
-        const darkModeBtn = document.getElementById('dark-mode-btn');
-        let isDarkMode = false;
-
-        darkModeBtn.addEventListener('click', () => {
-            isDarkMode = !isDarkMode;
-            document.body.style.backgroundColor = isDarkMode ? '#1f232a' : '#f5f5f7';
-            document.documentElement.style.setProperty('--title-text-color', isDarkMode ? '#ffffff' : '#42526e');
-            document.documentElement.style.setProperty('--block-bg-color', isDarkMode ? '#2d333b' : '#ffffff');
-            document.documentElement.style.setProperty('--block-title-color', isDarkMode ? '#ffffff' : '#42526e');
-            document.documentElement.style.setProperty('--time-text-color', isDarkMode ? '#ffffff' : '#42526e');
-            darkModeBtn.textContent = isDarkMode ? '🌙' : '☀️';
-            darkModeBtn.classList.toggle('dark-mode-active', isDarkMode);
-        });
-
         // Scale elements dynamically on window resize
         let scaleFactor = 1;
         function updateScale() {
-            const width = window.innerWidth / defaultWidth;
-            const height = window.innerHeight / defaultHeight;
+            const width = window.innerWidth / 1920; // Normalize to a base resolution
+            const height = window.innerHeight / 1080;
             scaleFactor = Math.min(width, height); // Maintain aspect ratio
             document.body.style.transform = `scale(${scaleFactor})`;
         }
