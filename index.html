@@ -503,7 +503,10 @@
                 addTimeZone(selectedTimeZone, displayName);
 
                 // Dynamically adjust window height
-                adjustWindowHeight();
+                const baseHeight = 300; // Minimum height to accommodate dropdown
+                const blockHeight = 60; // Height per time block
+                const windowHeight = Math.max(baseHeight, 300 + savedTimeZones.length * blockHeight); // Ensure minimum height
+                ipcRenderer.send('resize-window', windowHeight);
             }
 
             timezoneDropdown.style.display = 'none'; // Hide dropdown after adding
@@ -542,7 +545,10 @@
             timeZoneDiv.remove();
 
             // Dynamically adjust window height
-            adjustWindowHeight();
+            const baseHeight = 300; // Minimum height to accommodate dropdown
+            const blockHeight = 60; // Height per time block
+            const windowHeight = Math.max(baseHeight, 300 + savedTimeZones.length * blockHeight); // Ensure minimum height
+            ipcRenderer.send('resize-window', windowHeight);
         };
 
         // Update time for all time zones every second
@@ -650,6 +656,7 @@
                 .toString(16)
                 .slice(1)}`;
         }
+<<<<<<< HEAD
 
         // Function to dynamically adjust window height
         function adjustWindowHeight() {
@@ -675,6 +682,8 @@
             // Send the new height to the main process
             ipcRenderer.send('resize-window', totalHeight);
         }
+=======
+>>>>>>> parent of cb5fd85 (Update index.html fixing window size still.)
     </script>
 </body>
 </html>
