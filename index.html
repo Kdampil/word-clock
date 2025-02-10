@@ -55,14 +55,11 @@
             opacity: 0;
             transition: opacity 0.3s ease;
             -webkit-app-region: no-drag;
+            color: invert(var(--title-bar-bg-color, #f5f5f7));
         }
 
         .title-bar:hover button {
             opacity: 1;
-        }
-
-        .title-bar button:hover {
-            color: invert(var(--title-bar-bg-color, #f5f5f7));
         }
 
         /* Header */
@@ -145,6 +142,8 @@
             display: none;
             z-index: 10;
             width: 300px;
+            max-height: 300px; /* Make dropdown scrollable */
+            overflow-y: auto; /* Enable scrolling */
         }
 
         .timezone-dropdown select,
@@ -290,7 +289,6 @@
         <!-- Time Zone Dropdown -->
         <div class="timezone-dropdown" id="timezone-dropdown">
             <select id="timezone-select">
-                <option value="Etc/UTC">UTC (Coordinated Universal Time)</option>
                 <option value="Etc/GMT+12">UTC-12:00 (Baker Island Time)</option>
                 <option value="Etc/GMT+11">UTC-11:00 (Niue Time)</option>
                 <option value="Etc/GMT+10">UTC-10:00 (Hawaii-Aleutian Standard Time)</option>
@@ -495,7 +493,7 @@
                 addTimeZone(selectedTimeZone, displayName);
 
                 // Dynamically adjust window height
-                const windowHeight = 424 + savedTimeZones.length * 60; // Adjust height based on time zones
+                const windowHeight = 168 + savedTimeZones.length * 60; // Start at 168px and grow by 60px per time block
                 ipcRenderer.send('resize-window', windowHeight);
             }
 
@@ -535,7 +533,7 @@
             timeZoneDiv.remove();
 
             // Dynamically adjust window height
-            const windowHeight = 424 + savedTimeZones.length * 60; // Adjust height based on time zones
+            const windowHeight = 168 + savedTimeZones.length * 60; // Adjust height based on time zones
             ipcRenderer.send('resize-window', windowHeight);
         };
 
