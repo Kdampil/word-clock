@@ -305,22 +305,18 @@
     </main>
 
     <script>
-<script>
-    const { ipcRenderer } = require('electron');
+        const { ipcRenderer } = require('electron');
 
-    // Toggle "Always on Top"
-    const pinBtn = document.getElementById('pin-btn');
-    pinBtn.addEventListener('click', () => {
-        const isActive = pinBtn.classList.toggle('active');
-        const icon = isActive ? '📍' : '📌';
-        pinBtn.textContent = icon;
+        // Toggle "Always on Top"
+        const pinBtn = document.getElementById('pin-btn');
+        pinBtn.addEventListener('click', () => {
+            const isActive = pinBtn.classList.toggle('active');
+            const icon = isActive ? '📍' : '📌';
+            pinBtn.textContent = icon;
 
-        // Send IPC message to main process
-        ipcRenderer.send('set-always-on-top', isActive);
-    });
-
-    // Rest of the code remains unchanged...
-</script>
+            // Send IPC message to main process
+            ipcRenderer.send('set-always-on-top', isActive);
+        });
 
         // Editable Title
         const editableTitle = document.getElementById('editable-title');
@@ -372,202 +368,4 @@
             const defaultTheme = {
                 backgroundColor: '#f5f5f7',
                 primaryColor: '#0079bf',
-                blockBgColor: '#ffffff',
-                titleTextColor: '#42526e',
-                blockTitleColor: '#42526e',
-                timeTextColor: '#42526e',
-            };
-
-            // Apply default colors
-            document.body.style.backgroundColor = defaultTheme.backgroundColor;
-            document.documentElement.style.setProperty('--primary-color', defaultTheme.primaryColor);
-            document.documentElement.style.setProperty('--primary-hover-color', shadeColor(defaultTheme.primaryColor, -10));
-            document.documentElement.style.setProperty('--block-bg-color', defaultTheme.blockBgColor);
-            document.documentElement.style.setProperty('--title-text-color', defaultTheme.titleTextColor);
-            document.documentElement.style.setProperty('--block-title-color', defaultTheme.blockTitleColor);
-            document.documentElement.style.setProperty('--time-text-color', defaultTheme.timeTextColor);
-
-            // Reset color pickers
-            bgColorPicker.value = defaultTheme.backgroundColor;
-            primaryColorPicker.value = defaultTheme.primaryColor;
-            blockBgColorPicker.value = defaultTheme.blockBgColor;
-            titleTextColorPicker.value = defaultTheme.titleTextColor;
-            blockTitleColorPicker.value = defaultTheme.blockTitleColor;
-            timeTextColorPicker.value = defaultTheme.timeTextColor;
-
-            // Save default theme to localStorage
-            localStorage.setItem('theme', JSON.stringify(defaultTheme));
-        });
-
-        // Hide dropdowns when clicking outside
-        document.addEventListener('click', (event) => {
-            if (!timezoneDropdown.contains(event.target) && event.target !== addBtn) {
-                timezoneDropdown.style.display = 'none';
-            }
-            if (!themeDropdown.contains(event.target) && event.target !== gearBtn) {
-                themeDropdown.style.display = 'none';
-            }
-        });
-
-        // Load saved time zones from localStorage
-        let savedTimeZones = JSON.parse(localStorage.getItem('timeZones')) || [];
-        savedTimeZones.forEach(({ timeZone, displayName }) => addTimeZone(timeZone, displayName));
-
-        // Add a new time zone
-        confirmTimezoneButton.addEventListener('click', () => {
-            const selectedTimeZone = timezoneSelect.value;
-            const optionText = timezoneSelect.options[timezoneSelect.selectedIndex].text;
-
-            // Extract just the descriptive name (e.g., "Hawaii-Aleutian Standard Time")
-            const displayName = optionText.split(' (')[1]?.slice(0, -1) || optionText;
-
-            // Check if the time zone already exists
-            const exists = savedTimeZones.some((tz) => tz.timeZone === selectedTimeZone);
-            if (!exists) {
-                const newTimeZone = { timeZone: selectedTimeZone, displayName };
-                savedTimeZones.push(newTimeZone);
-                localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
-                addTimeZone(selectedTimeZone, displayName);
-            }
-
-            timezoneDropdown.style.display = 'none'; // Hide dropdown after adding
-        });
-
-        // Function to add a time zone to the UI
-        function addTimeZone(timeZone, displayName) {
-            const timeZoneDiv = document.createElement('div');
-            timeZoneDiv.classList.add('time-zone');
-            timeZoneDiv.dataset.timeZone = timeZone;
-
-            timeZoneDiv.innerHTML = `
-                <h2><span contenteditable="true" class="editable-name">${displayName}</span></h2>
-                <p class="time">--:--:--</p>
-                <button class="delete-btn" onclick="deleteTimeZone('${timeZone}')">&times;</button>
-            `;
-
-            const editableNameSpan = timeZoneDiv.querySelector('.editable-name');
-            editableNameSpan.addEventListener('blur', () => {
-                const updatedDisplayName = editableNameSpan.textContent;
-                const timeZoneIndex = savedTimeZones.findIndex((tz) => tz.timeZone === timeZone);
-                if (timeZoneIndex !== -1) {
-                    savedTimeZones[timeZoneIndex].displayName = updatedDisplayName;
-                    localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
-                }
-            });
-
-            timeZoneContainer.appendChild(timeZoneDiv);
-        }
-
-        // Function to delete a time zone
-        window.deleteTimeZone = function (timeZone) {
-            savedTimeZones = savedTimeZones.filter((tz) => tz.timeZone !== timeZone);
-            localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
-            const timeZoneDiv = document.querySelector(`[data-time-zone="${timeZone}"]`);
-            timeZoneDiv.remove();
-        };
-
-        // Update time for all time zones every second
-        function updateTime() {
-            document.querySelectorAll('.time-zone').forEach((tzDiv) => {
-                const timeZone = tzDiv.dataset.timeZone;
-                const timeElement = tzDiv.querySelector('.time');
-                const now = new Date();
-                const time = now.toLocaleTimeString('en-US', { timeZone });
-                timeElement.textContent = time;
-            });
-        }
-
-        setInterval(updateTime, 1000);
-        updateTime();
-
-        // Theme Customization Logic
-        const savedTheme = JSON.parse(localStorage.getItem('theme')) || {
-            backgroundColor: '#f5f5f7',
-            primaryColor: '#0079bf',
-            blockBgColor: '#ffffff',
-            titleTextColor: '#42526e',
-            blockTitleColor: '#42526e',
-            timeTextColor: '#42526e',
-        };
-
-        // Apply saved theme on load
-        document.body.style.backgroundColor = savedTheme.backgroundColor;
-        document.documentElement.style.setProperty('--primary-color', savedTheme.primaryColor);
-        document.documentElement.style.setProperty('--primary-hover-color', shadeColor(savedTheme.primaryColor, -10));
-        document.documentElement.style.setProperty('--block-bg-color', savedTheme.blockBgColor);
-        document.documentElement.style.setProperty('--title-text-color', savedTheme.titleTextColor);
-        document.documentElement.style.setProperty('--block-title-color', savedTheme.blockTitleColor);
-        document.documentElement.style.setProperty('--time-text-color', savedTheme.timeTextColor);
-
-        bgColorPicker.value = savedTheme.backgroundColor;
-        primaryColorPicker.value = savedTheme.primaryColor;
-        blockBgColorPicker.value = savedTheme.blockBgColor;
-        titleTextColorPicker.value = savedTheme.titleTextColor;
-        blockTitleColorPicker.value = savedTheme.blockTitleColor;
-        timeTextColorPicker.value = savedTheme.timeTextColor;
-
-        // Update background color
-        bgColorPicker.addEventListener('input', (event) => {
-            const newBgColor = event.target.value;
-            document.body.style.backgroundColor = newBgColor;
-            savedTheme.backgroundColor = newBgColor;
-            localStorage.setItem('theme', JSON.stringify(savedTheme));
-        });
-
-        // Update primary color
-        primaryColorPicker.addEventListener('input', (event) => {
-            const newPrimaryColor = event.target.value;
-            document.documentElement.style.setProperty('--primary-color', newPrimaryColor);
-            document.documentElement.style.setProperty('--primary-hover-color', shadeColor(newPrimaryColor, -10));
-            savedTheme.primaryColor = newPrimaryColor;
-            localStorage.setItem('theme', JSON.stringify(savedTheme));
-        });
-
-        // Update time block background color
-        blockBgColorPicker.addEventListener('input', (event) => {
-            const newBlockBgColor = event.target.value;
-            document.documentElement.style.setProperty('--block-bg-color', newBlockBgColor);
-            savedTheme.blockBgColor = newBlockBgColor;
-            localStorage.setItem('theme', JSON.stringify(savedTheme));
-        });
-
-        // Update title text color
-        titleTextColorPicker.addEventListener('input', (event) => {
-            const newTitleTextColor = event.target.value;
-            document.documentElement.style.setProperty('--title-text-color', newTitleTextColor);
-            savedTheme.titleTextColor = newTitleTextColor;
-            localStorage.setItem('theme', JSON.stringify(savedTheme));
-        });
-
-        // Update time block title text color
-        blockTitleColorPicker.addEventListener('input', (event) => {
-            const newBlockTitleColor = event.target.value;
-            document.documentElement.style.setProperty('--block-title-color', newBlockTitleColor);
-            savedTheme.blockTitleColor = newBlockTitleColor;
-            localStorage.setItem('theme', JSON.stringify(savedTheme));
-        });
-
-        // Update time text color
-        timeTextColorPicker.addEventListener('input', (event) => {
-            const newTimeTextColor = event.target.value;
-            document.documentElement.style.setProperty('--time-text-color', newTimeTextColor);
-            savedTheme.timeTextColor = newTimeTextColor;
-            localStorage.setItem('theme', JSON.stringify(savedTheme));
-        });
-
-        // Helper function to darken/lighten a color
-        function shadeColor(color, percent) {
-            const num = parseInt(color.slice(1), 16),
-                amt = Math.round(2.55 * percent),
-                R = (num >> 16) + amt,
-                G = ((num >> 8) & 0x00ff) + amt,
-                B = (num & 0x0000ff) + amt;
-            return `#${(0x1000000 + (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
-                (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
-                (B < 255 ? (B < 1 ? 0 : B) : 255))
-                .toString(16)
-                .slice(1)}`;
-        }
-    </script>
-</body>
-</html>
+                blockBgColor: '#ffffff
