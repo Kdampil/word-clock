@@ -494,10 +494,7 @@
                 addTimeZone(selectedTimeZone, displayName);
 
                 // Dynamically adjust window height
-                const baseHeight = 300; // Minimum height to accommodate dropdown
-                const blockHeight = 60; // Height per time block
-                const windowHeight = Math.max(baseHeight, 300 + savedTimeZones.length * blockHeight); // Ensure minimum height
-                ipcRenderer.send('resize-window', windowHeight);
+                adjustWindowHeight();
             }
 
             timezoneDropdown.style.display = 'none'; // Hide dropdown after adding
@@ -536,10 +533,7 @@
             timeZoneDiv.remove();
 
             // Dynamically adjust window height
-            const baseHeight = 300; // Minimum height to accommodate dropdown
-            const blockHeight = 60; // Height per time block
-            const windowHeight = Math.max(baseHeight, 300 + savedTimeZones.length * blockHeight); // Ensure minimum height
-            ipcRenderer.send('resize-window', windowHeight);
+            adjustWindowHeight();
         };
 
         // Update time for all time zones every second
@@ -646,6 +640,22 @@
                 (B < 255 ? (B < 1 ? 0 : B) : 255))
                 .toString(16)
                 .slice(1)}`;
+        }
+
+        // Function to dynamically adjust window height
+        function adjustWindowHeight() {
+            const baseHeight = 300; // Minimum height to accommodate dropdown
+            const bottomPadding = 20; // Fixed padding at the bottom for aesthetics
+
+            // Measure the height of a single time block
+            const firstTimeZone = document.querySelector('.time-zone');
+            const timeBlockHeight = firstTimeZone ? firstTimeZone.offsetHeight : 0;
+
+            // Calculate total height
+            const totalHeight = baseHeight + (timeBlockHeight * savedTimeZones.length) + bottomPadding;
+
+            // Send the new height to the main process
+            ipcRenderer.send('resize-window', totalHeight);
         }
     </script>
 </body>
