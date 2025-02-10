@@ -95,7 +95,7 @@ function createWindow() {
         if (!themeWindow || themeWindow.isDestroyed()) {
             themeWindow = new BrowserWindow({
                 width: 320,
-                height: 500,
+                height: 550, // Adjusted height to fit all options
                 resizable: false,
                 frame: false,
                 webPreferences: {
@@ -110,6 +110,20 @@ function createWindow() {
             });
         } else {
             themeWindow.focus();
+        }
+    });
+
+    // Minimize Theme Window
+    ipcMain.on('minimize-theme-window', () => {
+        if (themeWindow) {
+            themeWindow.minimize();
+        }
+    });
+
+    // Close Theme Window
+    ipcMain.on('close-theme-window', () => {
+        if (themeWindow) {
+            themeWindow.close();
         }
     });
 
