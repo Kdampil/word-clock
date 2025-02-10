@@ -11,7 +11,7 @@ function createWindow() {
     // Retrieve saved window state
     const savedState = store.get('windowState') || {
         width: 318,
-        height: 168, // Default height when no time blocks are present
+        height: 300, // Default height when no time blocks are present
         x: undefined,
         y: undefined,
         isMaximized: false,
@@ -80,9 +80,12 @@ function createWindow() {
     ipcMain.on('resize-window', (event, newHeight) => {
         if (mainWindow) {
             const currentBounds = mainWindow.getBounds();
+            const minHeight = 300; // Minimum height to accommodate dropdown
+            const adjustedHeight = Math.max(minHeight, newHeight); // Ensure height never falls below minimum
+
             mainWindow.setBounds({
                 width: 318,
-                height: newHeight,
+                height: adjustedHeight,
                 x: currentBounds.x,
                 y: currentBounds.y,
             });
