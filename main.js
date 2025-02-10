@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const Store = require('electron-store'); // For persistent storage
 
@@ -43,12 +43,12 @@ function createWindow() {
     let windowState = { ...savedState };
     const saveWindowState = () => {
         if (!mainWindow.isMaximized()) {
-            const [x, y] = mainWindow.getBounds();
+            const bounds = mainWindow.getBounds(); // Correctly access bounds as an object
             windowState = {
-                width: mainWindow.getBounds().width,
-                height: mainWindow.getBounds().height,
-                x: x,
-                y: y,
+                width: bounds.width,
+                height: bounds.height,
+                x: bounds.x,
+                y: bounds.y,
                 isMaximized: mainWindow.isMaximized(),
             };
         } else {
@@ -62,8 +62,6 @@ function createWindow() {
     mainWindow.on('move', saveWindowState);
     mainWindow.on('close', saveWindowState);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     // Handle "Always on Top" toggle
     ipcMain.on('set-always-on-top', (event, isActive) => {
         mainWindow.setAlwaysOnTop(isActive);
@@ -79,10 +77,6 @@ function createWindow() {
         mainWindow.close();
     });
 
-=======
->>>>>>> parent of 6d2b3b5 (Update main.js)
-=======
->>>>>>> parent of 6d2b3b5 (Update main.js)
     // Optional: Open DevTools for debugging
     // mainWindow.webContents.openDevTools();
 
