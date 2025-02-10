@@ -418,11 +418,10 @@
     const timeTextColorPicker = document.getElementById('time-text-color-picker');
     const restoreBtn = document.getElementById('restore-btn');
 
-    // Toggle dropdown visibility
-    addBtn.addEventListener('click', () => {
-        timezoneDropdown.style.display = timezoneDropdown.style.display === 'block' ? 'none' : 'block';
-        themeDropdown.style.display = 'none'; // Hide theme dropdown when showing timezone dropdown
-    });
+// Open Theme Customization Pop-Out Window
+gearBtn.addEventListener('click', () => {
+    ipcRenderer.send('open-theme-window');
+});
 
     gearBtn.addEventListener('click', () => {
         themeDropdown.style.display = themeDropdown.style.display === 'block' ? 'none' : 'block';
