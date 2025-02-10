@@ -10,8 +10,8 @@ let mainWindow;
 function createWindow() {
     // Retrieve saved window state
     const savedState = store.get('windowState') || {
-        width: 350,
-        height: 450,
+        width: 318,
+        height: 424,
         x: undefined,
         y: undefined,
         isMaximized: false,
@@ -23,7 +23,7 @@ function createWindow() {
         height: savedState.height,
         x: savedState.x,
         y: savedState.y,
-        resizable: true,
+        resizable: false, // Disable resizing for now
         frame: false, // Remove the default window frame
         webPreferences: {
             nodeIntegration: true,
@@ -33,11 +33,6 @@ function createWindow() {
 
     // Load the index.html file
     mainWindow.loadFile('index.html');
-
-    // Restore maximized state
-    if (savedState.isMaximized) {
-        mainWindow.maximize();
-    }
 
     // Track window state changes
     let windowState = { ...savedState };
@@ -78,6 +73,19 @@ function createWindow() {
     ipcMain.on('close-window', () => {
         if (mainWindow) {
             mainWindow.close();
+        }
+    });
+
+    // Handle Dynamic Window Height Adjustment
+    ipcMain.on('resize-window', (event, newHeight) => {
+        if (mainWindow) {
+            const currentBounds = mainWindow.getBounds();
+            mainWindow.setBounds({
+                width: 318,
+                height: newHeight,
+                x: currentBounds.x,
+                y: currentBounds.y,
+            });
         }
     });
 
