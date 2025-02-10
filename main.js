@@ -10,8 +10,8 @@ let mainWindow;
 function createWindow() {
     // Retrieve saved window state
     const savedState = store.get('windowState') || {
-        width: 318,
-        height: 300, // Default height when no time blocks are present
+        width: 350,
+        height: 450,
         x: undefined,
         y: undefined,
         isMaximized: false,
@@ -23,7 +23,7 @@ function createWindow() {
         height: savedState.height,
         x: savedState.x,
         y: savedState.y,
-        resizable: false, // Disable resizing for now
+        resizable: true, // Allow resizing
         frame: false, // Remove the default window frame
         webPreferences: {
             nodeIntegration: true,
@@ -33,6 +33,11 @@ function createWindow() {
 
     // Load the index.html file
     mainWindow.loadFile('index.html');
+
+    // Restore maximized state
+    if (savedState.isMaximized) {
+        mainWindow.maximize();
+    }
 
     // Track window state changes
     let windowState = { ...savedState };
@@ -84,7 +89,7 @@ function createWindow() {
             const adjustedHeight = Math.max(minHeight, newHeight); // Ensure height never falls below minimum
 
             mainWindow.setBounds({
-                width: 318,
+                width: currentBounds.width,
                 height: adjustedHeight,
                 x: currentBounds.x,
                 y: currentBounds.y,
