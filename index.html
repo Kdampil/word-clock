@@ -421,11 +421,17 @@
         addBtn.addEventListener('click', () => {
             timezoneDropdown.style.display = timezoneDropdown.style.display === 'block' ? 'none' : 'block';
             themeDropdown.style.display = 'none'; // Hide theme dropdown when showing timezone dropdown
+
+            // Dynamically adjust window height
+            adjustWindowHeight();
         });
 
         gearBtn.addEventListener('click', () => {
             themeDropdown.style.display = themeDropdown.style.display === 'block' ? 'none' : 'block';
             timezoneDropdown.style.display = 'none'; // Hide timezone dropdown when showing theme dropdown
+
+            // Dynamically adjust window height
+            adjustWindowHeight();
         });
 
         // Restore default colors
@@ -471,6 +477,9 @@
             if (!themeDropdown.contains(event.target) && event.target !== gearBtn) {
                 themeDropdown.style.display = 'none';
             }
+
+            // Dynamically adjust window height
+            adjustWindowHeight();
         });
 
         // Load saved time zones from localStorage
@@ -644,15 +653,24 @@
 
         // Function to dynamically adjust window height
         function adjustWindowHeight() {
-            const baseHeight = 300; // Minimum height to accommodate dropdown
-            const bottomPadding = 20; // Fixed padding at the bottom for aesthetics
+            const dropdown = document.getElementById('timezone-dropdown');
+            const themeDropdown = document.getElementById('theme-dropdown');
+            const timeZoneContainer = document.getElementById('time-zone-container');
 
-            // Measure the height of a single time block
-            const firstTimeZone = document.querySelector('.time-zone');
-            const timeBlockHeight = firstTimeZone ? firstTimeZone.offsetHeight : 0;
+            // Measure the height of visible elements
+            const dropdownHeight = dropdown.style.display === 'block' ? dropdown.offsetHeight : 0;
+            const themeDropdownHeight = themeDropdown.style.display === 'block' ? themeDropdown.offsetHeight : 0;
+            const timeBlockHeight = Array.from(timeZoneContainer.children).reduce(
+                (total, block) => total + block.offsetHeight,
+                0
+            );
+
+            // Fixed padding at the bottom
+            const bottomPadding = 20;
 
             // Calculate total height
-            const totalHeight = baseHeight + (timeBlockHeight * savedTimeZones.length) + bottomPadding;
+            const totalHeight =
+                Math.max(dropdownHeight, themeDropdownHeight) + timeBlockHeight + bottomPadding;
 
             // Send the new height to the main process
             ipcRenderer.send('resize-window', totalHeight);
