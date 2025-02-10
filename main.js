@@ -63,6 +63,7 @@ function createWindow() {
     mainWindow.on('close', saveWindowState);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     // Handle "Always on Top" toggle
     ipcMain.on('set-always-on-top', (event, isActive) => {
         mainWindow.setAlwaysOnTop(isActive);
@@ -78,6 +79,8 @@ function createWindow() {
         mainWindow.close();
     });
 
+=======
+>>>>>>> parent of 6d2b3b5 (Update main.js)
 =======
 >>>>>>> parent of 6d2b3b5 (Update main.js)
     // Optional: Open DevTools for debugging
