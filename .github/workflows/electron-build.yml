@@ -3,10 +3,11 @@ name: Electron Build and Package
 on:
   push:
     branches:
-      - main # Trigger on pushes to the main branch
+      - main # Auto-build on main branch
   pull_request:
     branches:
       - main
+  workflow_dispatch: # Allows manual workflow runs on any branch
 
 jobs:
   build:
