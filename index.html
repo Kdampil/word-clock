@@ -1,315 +1,38 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>World Clock - Time Zones</title>
-    <!-- Load Inter Font from Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<!-- Header -->
+<header>
+    <h1>
+        <span class="editable-title" id="editable-title">🌍 World Clock</span>
+    </h1>
+</header>
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--block-bg-color, #f5f5f7);
-            color: var(--time-text-color, #333);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            overflow: hidden;
-            transition: background 0.3s ease;
-        }
+<div class="controls">
+    <button class="add-btn" id="add-btn">🌐</button> <!-- Globe Icon -->
+    <button class="gear-btn" id="gear-btn">⚙️</button>
+    <button class="pin-btn" id="pin-btn">📌</button>
 
-        /* Title Bar */
-        .title-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 30px;
-            width: 100%;
-            background: var(--title-bar-bg-color, #f5f5f7); /* Custom title bar color */
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1000;
-            -webkit-app-region: drag;
-            padding: 0 10px;
-        }
-
-        .title-bar .buttons {
-            display: flex;
-            gap: 5px;
-        }
-
-        .title-bar button {
-            background: none;
-            border: none;
-            font-size: 1rem;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            -webkit-app-region: no-drag;
-        }
-
-        .title-bar:hover button {
-            opacity: 1;
-        }
-
-        .title-bar button:hover {
-            color: invert(var(--title-bar-bg-color, #f5f5f7));
-        }
-
-        /* Header */
-        header {
-            text-align: center;
-            margin-top: 40px;
-            margin-bottom: 20px;
-            cursor: default;
-            user-select: none;
-            height: 40px;
-        }
-
-        .editable-title {
-            cursor: pointer;
-            outline: none;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--title-text-color, #42526e);
-            text-align: center;
-            width: 100%;
-            max-width: 300px;
-            font-family: var(--title-font-family, 'Inter');
-            transition: color 0.3s ease;
-        }
-
-        .editable-title:focus {
-            border-bottom: 1px solid var(--primary-color, #0079bf);
-        }
-
-        /* Controls */
-        .controls {
-            margin-bottom: 20px;
-            position: relative;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .add-btn,
-        .gear-btn,
-        .pin-btn {
-            background: var(--primary-color, #0079bf);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            font-size: 1.5rem;
-            line-height: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.3s ease, background 0.3s ease;
-            font-family: 'Inter', sans-serif;
-            -webkit-app-region: no-drag;
-        }
-
-        .add-btn:hover,
-        .gear-btn:hover,
-        .pin-btn:hover {
-            transform: scale(1.1);
-        }
-
-        .pin-btn.active {
-            background: var(--primary-hover-color, #0067a3);
-        }
-
-        /* Time Zone Dropdown */
-        .timezone-dropdown,
-        .theme-dropdown {
-            position: absolute;
-            top: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: white;
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            display: none;
-            z-index: 10;
-            width: 300px;
-        }
-
-        .timezone-dropdown select,
-        .theme-dropdown input[type="color"] {
-            padding: 10px;
-            font-size: 1rem;
-            width: 100%;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background: white;
-            color: var(--label-text-color, #333); /* Separate label text color */
-            font-family: 'Inter', sans-serif;
-        }
-
-        .timezone-dropdown button,
-        .theme-dropdown button {
-            padding: 10px;
-            font-size: 1rem;
-            margin-top: 10px;
-            border: none;
-            border-radius: 5px;
-            background: var(--primary-color, #0079bf);
-            color: white;
-            cursor: pointer;
-            transition: background 0.3s ease;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .timezone-dropdown button:hover,
-        .theme-dropdown button:hover {
-            background: var(--primary-hover-color, #0067a3);
-        }
-
-        /* Time Zone Container */
-        .time-zone-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            align-items: center;
-            width: 90vw;
-            max-width: 350px;
-            margin-top: 20px;
-        }
-
-        .time-zone {
-            background: var(--block-bg-color, white);
-            border-radius: 10px;
-            padding: 15px;
-            width: 100%;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, background 0.3s ease;
-            position: relative;
-        }
-
-        .time-zone:hover {
-            transform: scale(1.02);
-        }
-
-        .time-zone h2 {
-            font-size: 1rem;
-            margin-bottom: 5px;
-            cursor: pointer;
-            font-weight: 500;
-            color: var(--block-title-color, #42526e);
-            font-family: 'Inter', sans-serif;
-            transition: color 0.3s ease;
-            text-align: center;
-        }
-
-        .time-zone h2 span {
-            cursor: pointer;
-            outline: none;
-            background: none;
-            border: none;
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--block-title-color, #42526e);
-            text-align: center;
-            width: 100%;
-            font-family: 'Inter', sans-serif;
-            transition: color 0.3s ease;
-        }
-
-        .time-zone h2 span:focus {
-            border-bottom: 1px solid var(--primary-color, #0079bf);
-        }
-
-        .time-zone p {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--time-text-color, #42526e);
-            font-family: 'Inter', sans-serif;
-            transition: color 0.3s ease;
-        }
-
-        .delete-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: none;
-            border: none;
-            color: #b3bac5;
-            font-size: 1.2rem;
-            line-height: 1;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .time-zone:hover .delete-btn {
-            opacity: 1;
-        }
-
-        .delete-btn:hover {
-            color: #ff4d4d;
-        }
-    </style>
-</head>
-<body>
-    <!-- Title Bar -->
-    <div class="title-bar">
-        <div></div>
-        <div class="buttons">
-            <button id="minimize-btn">−</button>
-            <button id="close-btn">×</button>
-        </div>
-    </div>
-
-    <!-- Header -->
-    <header>
-        <h1>
-            <span class="editable-title" id="editable-title">🌍 World Clock</span>
-        </h1>
-    </header>
-
-    <div class="controls">
-        <button class="add-btn" id="add-btn">🌐</button> <!-- Globe Icon -->
-        <button class="gear-btn" id="gear-btn">⚙️</button>
-        <button class="pin-btn" id="pin-btn">📌</button>
-
-        <!-- Time Zone Dropdown -->
-        <div class="timezone-dropdown" id="timezone-dropdown">
-            <select id="timezone-select">
-                <option value="Etc/UTC">UTC (Coordinated Universal Time)</option>
-                <option value="Etc/GMT+12">UTC-12:00 (Baker Island Time)</option>
-                <option value="Etc/GMT+11">UTC-11:00 (Niue Time)</option>
-                <option value="Etc/GMT+10">UTC-10:00 (Hawaii-Aleutian Standard Time)</option>
-                <option value="Etc/GMT+9">UTC-09:00 (Alaska Standard Time)</option>
-                <option value="Etc/GMT+8">UTC-08:00 (Pacific Standard Time)</option>
-                <option value="Etc/GMT+7">UTC-07:00 (Mountain Standard Time)</option>
-                <option value="Etc/GMT+6">UTC-06:00 (Central Standard Time)</option>
-                <option value="Etc/GMT+5">UTC-05:00 (Eastern Standard Time)</option>
-                <option value="Etc/GMT+4">UTC-04:00 (Atlantic Standard Time)</option>
-                <option value="Etc/GMT+3">UTC-03:00 (Brasília Time)</option>
-                <option value="Etc/GMT+2">UTC-02:00 (South Georgia Time)</option>
-                <option value="Etc/GMT+1">UTC-01:00 (Cape Verde Time)</option>
-                <option value="Etc/GMT">UTC±00:00 (Greenwich Mean Time)</option>
-                <option value="Etc/GMT-1">UTC+01:00 (Central European Time)</option>
-                <option value="Etc/GMT-2">UTC+02:00 (Eastern European Time)</option>
-                <option value="Etc/GMT-3">UTC+03:00 (East Africa Time)</option>
-                <option value="Etc/GMT-4">UTC+04:00 (Gulf Standard Time)</option>
-                <option value="Etc/GMT-5">UTC+05:00 (Pakistan Standard Time)</option>
-                <option value="Etc/GMT-6">UTC+06:00 (Bangladesh Standard Time)</option
+    <!-- Time Zone Dropdown -->
+    <div class="timezone-dropdown" id="timezone-dropdown">
+        <select id="timezone-select">
+            <option value="Etc/UTC">UTC (Coordinated Universal Time)</option>
+            <option value="Etc/GMT+12">UTC-12:00 (Baker Island Time)</option>
+            <option value="Etc/GMT+11">UTC-11:00 (Niue Time)</option>
+            <option value="Etc/GMT+10">UTC-10:00 (Hawaii-Aleutian Standard Time)</option>
+            <option value="Etc/GMT+9">UTC-09:00 (Alaska Standard Time)</option>
+            <option value="Etc/GMT+8">UTC-08:00 (Pacific Standard Time)</option>
+            <option value="Etc/GMT+7">UTC-07:00 (Mountain Standard Time)</option>
+            <option value="Etc/GMT+6">UTC-06:00 (Central Standard Time)</option>
+            <option value="Etc/GMT+5">UTC-05:00 (Eastern Standard Time)</option>
+            <option value="Etc/GMT+4">UTC-04:00 (Atlantic Standard Time)</option>
+            <option value="Etc/GMT+3">UTC-03:00 (Brasília Time)</option>
+            <option value="Etc/GMT+2">UTC-02:00 (South Georgia Time)</option>
+            <option value="Etc/GMT+1">UTC-01:00 (Cape Verde Time)</option>
+            <option value="Etc/GMT">UTC±00:00 (Greenwich Mean Time)</option>
+            <option value="Etc/GMT-1">UTC+01:00 (Central European Time)</option>
+            <option value="Etc/GMT-2">UTC+02:00 (Eastern European Time)</option>
+            <option value="Etc/GMT-3">UTC+03:00 (East Africa Time)</option>
+            <option value="Etc/GMT-4">UTC+04:00 (Gulf Standard Time)</option>
+            <option value="Etc/GMT-5">UTC+05:00 (Pakistan Standard Time)</option>
+            <option value="Etc/GMT-6">UTC+06:00 (Bangladesh Standard Time)</option>
             <option value="Etc/GMT-7">UTC+07:00 (Indochina Time)</option>
             <option value="Etc/GMT-8">UTC+08:00 (China Standard Time)</option>
             <option value="Etc/GMT-9">UTC+09:00 (Japan Standard Time)</option>
@@ -320,39 +43,6 @@
             <option value="Etc/GMT-14">UTC+14:00 (Line Islands Time)</option>
         </select>
         <button id="confirm-timezone">Add</button>
-    </div>
-
-    <!-- Theme Dropdown -->
-    <div class="theme-dropdown" id="theme-dropdown">
-        <label>
-            Background Color:
-            <input type="color" id="bg-color-picker" value="#f5f5f7">
-        </label>
-        <label>
-            Button Color: <!-- Renamed from "Primary Color" -->
-            <input type="color" id="primary-color-picker" value="#0079bf">
-        </label>
-        <label>
-            Time Block Background:
-            <input type="color" id="block-bg-color-picker" value="#ffffff">
-        </label>
-        <label>
-            Title Bar Background: <!-- New option for title bar color -->
-            <input type="color" id="title-bar-bg-color-picker" value="#f5f5f7">
-        </label>
-        <label>
-            Title Text Color:
-            <input type="color" id="title-text-color-picker" value="#42526e">
-        </label>
-        <label>
-            Time Block Title Color:
-            <input type="color" id="block-title-color-picker" value="#42526e">
-        </label>
-        <label>
-            Time Text Color:
-            <input type="color" id="time-text-color-picker" value="#42526e">
-        </label>
-        <button id="restore-btn" style="margin-top: 10px;">↻ Restore Defaults</button>
     </div>
 </div>
 
@@ -383,266 +73,96 @@
         ipcRenderer.send('set-always-on-top', isActive);
     });
 
-    // Editable Title
-    const editableTitle = document.getElementById('editable-title');
-    editableTitle.addEventListener('click', () => {
-        editableTitle.contentEditable = true;
-        editableTitle.focus();
-    });
-
-    editableTitle.addEventListener('blur', () => {
-        editableTitle.contentEditable = false;
-        localStorage.setItem('title', editableTitle.textContent);
-    });
-
-    // Load saved title from localStorage
-    const savedTitle = localStorage.getItem('title');
-    if (savedTitle) {
-        editableTitle.textContent = savedTitle;
-    }
-
-    // Rest of the app's functionality remains unchanged
-    const addBtn = document.getElementById('add-btn');
-    const gearBtn = document.getElementById('gear-btn');
-    const timezoneDropdown = document.getElementById('timezone-dropdown');
-    const themeDropdown = document.getElementById('theme-dropdown');
-    const timezoneSelect = document.getElementById('timezone-select');
-    const confirmTimezoneButton = document.getElementById('confirm-timezone');
-    const timeZoneContainer = document.getElementById('time-zone-container');
-    const bgColorPicker = document.getElementById('bg-color-picker');
-    const primaryColorPicker = document.getElementById('primary-color-picker');
-    const blockBgColorPicker = document.getElementById('block-bg-color-picker');
-    const titleBarBgColorPicker = document.getElementById('title-bar-bg-color-picker'); // New picker for title bar
-    const titleTextColorPicker = document.getElementById('title-text-color-picker');
-    const blockTitleColorPicker = document.getElementById('block-title-color-picker');
-    const timeTextColorPicker = document.getElementById('time-text-color-picker');
-    const restoreBtn = document.getElementById('restore-btn');
-
 // Open Theme Customization Pop-Out Window
+const gearBtn = document.getElementById('gear-btn');
 gearBtn.addEventListener('click', () => {
     ipcRenderer.send('open-theme-window');
 });
 
-    gearBtn.addEventListener('click', () => {
-        themeDropdown.style.display = themeDropdown.style.display === 'block' ? 'none' : 'block';
-        timezoneDropdown.style.display = 'none'; // Hide timezone dropdown when showing theme dropdown
-    });
+// Add a new time zone
+document.getElementById('confirm-timezone').addEventListener('click', () => {
+    const selectedTimeZone = timezoneSelect.value;
+    const optionText = timezoneSelect.options[timezoneSelect.selectedIndex].text;
 
-    // Restore default colors
-    restoreBtn.addEventListener('click', () => {
-        const defaultTheme = {
-            backgroundColor: '#f5f5f7',
-            primaryColor: '#0079bf',
-            blockBgColor: '#ffffff',
-            titleBarBgColor: '#f5f5f7', // Default title bar background color
-            titleTextColor: '#42526e',
-            blockTitleColor: '#42526e',
-            timeTextColor: '#42526e',
-        };
+    // Extract just the descriptive name (e.g., "Hawaii-Aleutian Standard Time")
+    const displayName = optionText.split(' (')[1]?.slice(0, -1) || optionText;
 
-        // Apply default colors
-        document.body.style.backgroundColor = defaultTheme.backgroundColor;
-        document.documentElement.style.setProperty('--primary-color', defaultTheme.primaryColor);
-        document.documentElement.style.setProperty('--primary-hover-color', shadeColor(defaultTheme.primaryColor, -10));
-        document.documentElement.style.setProperty('--block-bg-color', defaultTheme.blockBgColor);
-        document.documentElement.style.setProperty('--title-bar-bg-color', defaultTheme.titleBarBgColor); // Apply title bar color
-        document.documentElement.style.setProperty('--title-text-color', defaultTheme.titleTextColor);
-        document.documentElement.style.setProperty('--block-title-color', defaultTheme.blockTitleColor);
-        document.documentElement.style.setProperty('--time-text-color', defaultTheme.timeTextColor);
-
-        // Reset color pickers
-        bgColorPicker.value = defaultTheme.backgroundColor;
-        primaryColorPicker.value = defaultTheme.primaryColor;
-        blockBgColorPicker.value = defaultTheme.blockBgColor;
-        titleBarBgColorPicker.value = defaultTheme.titleBarBgColor; // Reset title bar color picker
-        titleTextColorPicker.value = defaultTheme.titleTextColor;
-        blockTitleColorPicker.value = defaultTheme.blockTitleColor;
-        timeTextColorPicker.value = defaultTheme.timeTextColor;
-
-        // Save default theme to localStorage
-        localStorage.setItem('theme', JSON.stringify(defaultTheme));
-    });
-
-    // Hide dropdowns when clicking outside
-    document.addEventListener('click', (event) => {
-        if (!timezoneDropdown.contains(event.target) && event.target !== addBtn) {
-            timezoneDropdown.style.display = 'none';
-        }
-        if (!themeDropdown.contains(event.target) && event.target !== gearBtn) {
-            themeDropdown.style.display = 'none';
-        }
-    });
-
-    // Load saved time zones from localStorage
-    let savedTimeZones = JSON.parse(localStorage.getItem('timeZones')) || [];
-    savedTimeZones.forEach(({ timeZone, displayName }) => addTimeZone(timeZone, displayName));
-
-    // Add a new time zone
-    confirmTimezoneButton.addEventListener('click', () => {
-        const selectedTimeZone = timezoneSelect.value;
-        const optionText = timezoneSelect.options[timezoneSelect.selectedIndex].text;
-
-        // Extract just the descriptive name (e.g., "Hawaii-Aleutian Standard Time")
-        const displayName = optionText.split(' (')[1]?.slice(0, -1) || optionText;
-
-        // Check if the time zone already exists
-        const exists = savedTimeZones.some((tz) => tz.timeZone === selectedTimeZone);
-        if (!exists) {
-            const newTimeZone = { timeZone: selectedTimeZone, displayName };
-            savedTimeZones.push(newTimeZone);
-            localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
-            addTimeZone(selectedTimeZone, displayName);
-
-            // Dynamically adjust window height
-            const windowHeight = 424 + savedTimeZones.length * 60; // Adjust height based on time zones
-            ipcRenderer.send('resize-window', windowHeight);
-        }
-
-        timezoneDropdown.style.display = 'none'; // Hide dropdown after adding
-    });
-
-    // Function to add a time zone to the UI
-    function addTimeZone(timeZone, displayName) {
-        const timeZoneDiv = document.createElement('div');
-        timeZoneDiv.classList.add('time-zone');
-        timeZoneDiv.dataset.timeZone = timeZone;
-
-        timeZoneDiv.innerHTML = `
-            <h2><span contenteditable="true" class="editable-name">${displayName}</span></h2>
-            <p class="time">--:--:--</p>
-            <button class="delete-btn" onclick="deleteTimeZone('${timeZone}')">&times;</button>
-        `;
-
-        const editableNameSpan = timeZoneDiv.querySelector('.editable-name');
-        editableNameSpan.addEventListener('blur', () => {
-            const updatedDisplayName = editableNameSpan.textContent;
-            const timeZoneIndex = savedTimeZones.findIndex((tz) => tz.timeZone === timeZone);
-            if (timeZoneIndex !== -1) {
-                savedTimeZones[timeZoneIndex].displayName = updatedDisplayName;
-                localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
-            }
-        });
-
-        timeZoneContainer.appendChild(timeZoneDiv);
-    }
-
-    // Function to delete a time zone
-    window.deleteTimeZone = function (timeZone) {
-        savedTimeZones = savedTimeZones.filter((tz) => tz.timeZone !== timeZone);
+    // Check if the time zone already exists
+    const exists = savedTimeZones.some((tz) => tz.timeZone === selectedTimeZone);
+    if (!exists) {
+        const newTimeZone = { timeZone: selectedTimeZone, displayName };
+        savedTimeZones.push(newTimeZone);
         localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
-        const timeZoneDiv = document.querySelector(`[data-time-zone="${timeZone}"]`);
-        timeZoneDiv.remove();
+        addTimeZone(selectedTimeZone, displayName);
 
         // Dynamically adjust window height
         const windowHeight = 424 + savedTimeZones.length * 60; // Adjust height based on time zones
         ipcRenderer.send('resize-window', windowHeight);
-    };
-
-    // Update time for all time zones every second
-    function updateTime() {
-        document.querySelectorAll('.time-zone').forEach((tzDiv) => {
-            const timeZone = tzDiv.dataset.timeZone;
-            const timeElement = tzDiv.querySelector('.time');
-            const now = new Date();
-            const time = now.toLocaleTimeString('en-US', { timeZone });
-            timeElement.textContent = time;
-        });
     }
 
-    setInterval(updateTime, 1000);
-    updateTime();
+    timezoneDropdown.style.display = 'none'; // Hide dropdown after adding
+});
 
-    // Theme Customization Logic
-    const savedTheme = JSON.parse(localStorage.getItem('theme')) || {
-        backgroundColor: '#f5f5f7',
-        primaryColor: '#0079bf',
-        blockBgColor: '#ffffff',
-        titleBarBgColor: '#f5f5f7', // Default title bar background color
-        titleTextColor: '#42526e',
-        blockTitleColor: '#42526e',
-        timeTextColor: '#42526e',
-    };
+// Function to add a time zone to the UI
+function addTimeZone(timeZone, displayName) {
+    const timeZoneDiv = document.createElement('div');
+    timeZoneDiv.classList.add('time-zone');
+    timeZoneDiv.dataset.timeZone = timeZone;
 
-    // Apply saved theme on load
-    document.body.style.backgroundColor = savedTheme.backgroundColor;
-    document.documentElement.style.setProperty('--primary-color', savedTheme.primaryColor);
-    document.documentElement.style.setProperty('--primary-hover-color', shadeColor(savedTheme.primaryColor, -10));
-    document.documentElement.style.setProperty('--block-bg-color', savedTheme.blockBgColor);
-    document.documentElement.style.setProperty('--title-bar-bg-color', savedTheme.titleBarBgColor); // Apply title bar color
-    document.documentElement.style.setProperty('--title-text-color', savedTheme.titleTextColor);
-    document.documentElement.style.setProperty('--block-title-color', savedTheme.blockTitleColor);
-    document.documentElement.style.setProperty('--time-text-color', savedTheme.timeTextColor);
+    timeZoneDiv.innerHTML = `
+        <h2><span contenteditable="true" class="editable-name">${displayName}</span></h2>
+        <p class="time">--:--:--</p>
+        <button class="delete-btn" onclick="deleteTimeZone('${timeZone}')">&times;</button>
+    `;
 
-    // Update background color
-    bgColorPicker.addEventListener('input', (event) => {
-        const newBgColor = event.target.value;
-        document.body.style.backgroundColor = newBgColor;
-        savedTheme.backgroundColor = newBgColor;
-        localStorage.setItem('theme', JSON.stringify(savedTheme));
+    const editableNameSpan = timeZoneDiv.querySelector('.editable-name');
+    editableNameSpan.addEventListener('blur', () => {
+        const updatedDisplayName = editableNameSpan.textContent;
+        const timeZoneIndex = savedTimeZones.findIndex((tz) => tz.timeZone === timeZone);
+        if (timeZoneIndex !== -1) {
+            savedTimeZones[timeZoneIndex].displayName = updatedDisplayName;
+            localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
+        }
     });
 
-    // Update button color
-    primaryColorPicker.addEventListener('input', (event) => {
-        const newPrimaryColor = event.target.value;
-        document.documentElement.style.setProperty('--primary-color', newPrimaryColor);
-        document.documentElement.style.setProperty('--primary-hover-color', shadeColor(newPrimaryColor, -10));
-        savedTheme.primaryColor = newPrimaryColor;
-        localStorage.setItem('theme', JSON.stringify(savedTheme));
-    });
+    timeZoneContainer.appendChild(timeZoneDiv);
+}
 
-    // Update time block background color
-    blockBgColorPicker.addEventListener('input', (event) => {
-        const newBlockBgColor = event.target.value;
-        document.documentElement.style.setProperty('--block-bg-color', newBlockBgColor);
-        savedTheme.blockBgColor = newBlockBgColor;
-        localStorage.setItem('theme', JSON.stringify(savedTheme));
-    });
+// Function to delete a time zone
+window.deleteTimeZone = function (timeZone) {
+    savedTimeZones = savedTimeZones.filter((tz) => tz.timeZone !== timeZone);
+    localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
+    const timeZoneDiv = document.querySelector(`[data-time-zone="${timeZone}"]`);
+    timeZoneDiv.remove();
 
-    // Update title bar background color
-    titleBarBgColorPicker.addEventListener('input', (event) => {
-        const newTitleBarBgColor = event.target.value;
-        document.documentElement.style.setProperty('--title-bar-bg-color', newTitleBarBgColor);
-        savedTheme.titleBarBgColor = newTitleBarBgColor;
-        localStorage.setItem('theme', JSON.stringify(savedTheme));
-    });
+    // Dynamically adjust window height
+    const windowHeight = 424 + savedTimeZones.length * 60; // Adjust height based on time zones
+    ipcRenderer.send('resize-window', windowHeight);
+};
 
-    // Update title text color
-    titleTextColorPicker.addEventListener('input', (event) => {
-        const newTitleTextColor = event.target.value;
-        document.documentElement.style.setProperty('--title-text-color', newTitleTextColor);
-        savedTheme.titleTextColor = newTitleTextColor;
-        localStorage.setItem('theme', JSON.stringify(savedTheme));
+// Update time for all time zones every second
+function updateTime() {
+    document.querySelectorAll('.time-zone').forEach((tzDiv) => {
+        const timeZone = tzDiv.dataset.timeZone;
+        const timeElement = tzDiv.querySelector('.time');
+        const now = new Date();
+        const time = now.toLocaleTimeString('en-US', { timeZone });
+        timeElement.textContent = time;
     });
+}
 
-    // Update time block title color
-    blockTitleColorPicker.addEventListener('input', (event) => {
-        const newBlockTitleColor = event.target.value;
-        document.documentElement.style.setProperty('--block-title-color', newBlockTitleColor);
-        savedTheme.blockTitleColor = newBlockTitleColor;
-        localStorage.setItem('theme', JSON.stringify(savedTheme));
-    });
+setInterval(updateTime, 1000);
+updateTime();
 
-    // Update time text color
-    timeTextColorPicker.addEventListener('input', (event) => {
-        const newTimeTextColor = event.target.value;
-        document.documentElement.style.setProperty('--time-text-color', newTimeTextColor);
-        savedTheme.timeTextColor = newTimeTextColor;
-        localStorage.setItem('theme', JSON.stringify(savedTheme));
-    });
+// Apply theme updates from main process
+ipcRenderer.on('apply-theme', (event, { property, value }) => {
+    document.documentElement.style.setProperty(`--${property}`, value);
 
-    // Helper function to darken/lighten a color
-    function shadeColor(color, percent) {
-        const num = parseInt(color.slice(1), 16),
-            amt = Math.round(2.55 * percent),
-            R = (num >> 16) + amt,
-            G = ((num >> 8) & 0x00ff) + amt,
-            B = (num & 0x0000ff) + amt;
-        return `#${(0x1000000 + (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
-            (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
-            (B < 255 ? (B < 1 ? 0 : B) : 255))
-            .toString(16)
-            .slice(1)}`;
-    }
+    // Save updated theme to localStorage
+    const savedTheme = JSON.parse(localStorage.getItem('theme')) || {};
+    savedTheme[property] = value;
+    localStorage.setItem('theme', JSON.stringify(savedTheme));
+});
 </script>
 </body>
 </html>
