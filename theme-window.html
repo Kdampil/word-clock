@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Customization</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--block-bg-color, #f5f5f7);
+            color: var(--label-text-color, #333);
+            margin: 0;
+            padding: 10px;
+            width: 300px;
+            height: auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow-y: auto;
+            -webkit-app-region: drag; /* Make the entire window draggable */
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--title-text-color, #42526e);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--label-text-color, #333);
+        }
+
+        input[type="color"] {
+            width: 100%;
+            padding: 5px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 15px;
+            border: none;
+            border-radius: 5px;
+            background: var(--primary-color, #0079bf);
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: var(--primary-hover-color, #0067a3);
+        }
+
+        .no-drag {
+            -webkit-app-region: no-drag; /* Exclude buttons and inputs from dragging */
+        }
+    </style>
+</head>
+<body>
+    <h2>Customize Theme</h2>
+
+    <label>
+        Background Color:
+        <input type="color" id="bg-color-picker" class="no-drag">
+    </label>
+
+    <label>
+        Button Color:
+        <input type="color" id="primary-color-picker" class="no-drag">
+    </label>
+
+    <label>
+        Time Block Background:
+        <input type="color" id="block-bg-color-picker" class="no-drag">
+    </label>
+
+    <label>
+        Title Bar Background:
+        <input type="color" id="title-bar-bg-color-picker" class="no-drag">
+    </label>
+
+    <label>
+        Title Text Color:
+        <input type="color" id="title-text-color-picker" class="no-drag">
+    </label>
+
+    <label>
+        Time Block Title Color:
+        <input type="color" id="block-title-color-picker" class="no-drag">
+    </label>
+
+    <label>
+        Time Text Color:
+        <input type="color" id="time-text-color-picker" class="no-drag">
+    </label>
+
+    <button id="restore-btn" class="no-drag">↻ Restore Defaults</button>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        // Load saved theme from localStorage
+        const savedTheme = JSON.parse(localStorage.getItem('theme')) || {
+            backgroundColor: '#f5f5f7',
+            primaryColor: '#0079bf',
+            blockBgColor: '#ffffff',
+            titleBarBgColor: '#f5f5f7',
+            titleTextColor: '#42526e',
+            blockTitleColor: '#42526e',
+            timeTextColor: '#42526e',
+        };
+
+        // Apply saved theme to color pickers
+        document.getElementById('bg-color-picker').value = savedTheme.backgroundColor;
+        document.getElementById('primary-color-picker').value = savedTheme.primaryColor;
+        document.getElementById('block-bg-color-picker').value = savedTheme.blockBgColor;
+        document.getElementById('title-bar-bg-color-picker').value = savedTheme.titleBarBgColor;
+        document.getElementById('title-text-color-picker').value = savedTheme.titleTextColor;
+        document.getElementById('block-title-color-picker').value = savedTheme.blockTitleColor;
+        document.getElementById('time-text-color-picker').value = savedTheme.timeTextColor;
+
+        // Update colors in real-time
+        document.querySelectorAll('input[type="color"]').forEach((picker) => {
+            picker.addEventListener('input', (event) => {
+                const property = event.target.id.replace('-picker', '');
+                const value = event.target.value;
+
+                // Send updated color to main window
+                ipcRenderer.send('update-theme', { property, value });
+
+                // Save to localStorage
+                savedTheme[property] = value;
+                localStorage.setItem('theme', JSON.stringify(savedTheme));
+            });
+        });
+
+        // Restore defaults
+        document.getElementById('restore-btn').addEventListener('click', () => {
+            const defaultTheme = {
+                backgroundColor: '#f5f5f7',
+                primaryColor: '#0079bf',
+                blockBgColor: '#ffffff',
+                titleBarBgColor: '#f5f5f7',
+                titleTextColor: '#42526e',
+                blockTitleColor: '#42526e',
+                timeTextColor: '#42526e',
+            };
+
+            // Apply default colors
+            Object.entries(defaultTheme).forEach(([property, value]) => {
+                document.getElementById(`${property}-picker`).value = value;
+                ipcRenderer.send('update-theme', { property, value });
+            });
+
+            // Save defaults to localStorage
+            localStorage.setItem('theme', JSON.stringify(defaultTheme));
+        });
+    </script>
+</body>
+</html>
