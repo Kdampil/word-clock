@@ -6,7 +6,6 @@ const Store = require('electron-store'); // For persistent storage
 const store = new Store();
 
 let mainWindow;
-let themeWindow;
 
 function createWindow() {
     // Retrieve saved window state
@@ -88,48 +87,6 @@ function createWindow() {
                 y: currentBounds.y,
             });
         }
-    });
-
-    // Open Theme Customization Window
-    ipcMain.on('open-theme-window', () => {
-        if (!themeWindow || themeWindow.isDestroyed()) {
-            themeWindow = new BrowserWindow({
-                width: 320,
-                height: 550, // Adjusted height to fit all options
-                resizable: false,
-                frame: false,
-                webPreferences: {
-                    nodeIntegration: true,
-                    contextIsolation: false,
-                },
-            });
-
-            themeWindow.loadFile('theme-window.html');
-            themeWindow.on('closed', () => {
-                themeWindow = null;
-            });
-        } else {
-            themeWindow.focus();
-        }
-    });
-
-    // Minimize Theme Window
-    ipcMain.on('minimize-theme-window', () => {
-        if (themeWindow) {
-            themeWindow.minimize();
-        }
-    });
-
-    // Close Theme Window
-    ipcMain.on('close-theme-window', () => {
-        if (themeWindow) {
-            themeWindow.close();
-        }
-    });
-
-    // Handle Theme Updates from Pop-Out Window
-    ipcMain.on('update-theme', (event, { property, value }) => {
-        mainWindow.webContents.send('apply-theme', { property, value });
     });
 }
 
