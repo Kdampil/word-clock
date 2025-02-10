@@ -21,7 +21,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start; /* Align content to the top */
             overflow: hidden;
             transition: background 0.3s ease;
         }
@@ -34,10 +34,12 @@
             height: 30px;
             width: 100%; /* Span the full width of the window */
             background: var(--block-bg-color, #f5f5f7); /* Match app's background color */
+            position: fixed; /* Fix the title bar at the top */
+            top: 0;
+            left: 0;
+            z-index: 1000;
             -webkit-app-region: drag; /* Make the title bar draggable */
             padding: 0 10px;
-            position: relative;
-            z-index: 1000;
         }
 
         .title-bar .buttons {
@@ -66,6 +68,7 @@
         /* Header */
         header {
             text-align: center;
+            margin-top: 40px; /* Add space for the fixed title bar */
             margin-bottom: 20px;
             cursor: default; /* Remove draggable cursor from header */
             user-select: none;
@@ -181,6 +184,7 @@
             align-items: center;
             width: 90vw;
             max-width: 350px;
+            margin-top: 20px; /* Add space below the fixed title bar */
         }
 
         .time-zone {
@@ -479,6 +483,10 @@
                 savedTimeZones.push(newTimeZone);
                 localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
                 addTimeZone(selectedTimeZone, displayName);
+
+                // Dynamically adjust window height
+                const windowHeight = 424 + savedTimeZones.length * 60; // Adjust height based on time zones
+                ipcRenderer.send('resize-window', windowHeight);
             }
 
             timezoneDropdown.style.display = 'none'; // Hide dropdown after adding
@@ -515,6 +523,10 @@
             localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
             const timeZoneDiv = document.querySelector(`[data-time-zone="${timeZone}"]`);
             timeZoneDiv.remove();
+
+            // Dynamically adjust window height
+            const windowHeight = 424 + savedTimeZones.length * 60; // Adjust height based on time zones
+            ipcRenderer.send('resize-window', windowHeight);
         };
 
         // Update time for all time zones every second
