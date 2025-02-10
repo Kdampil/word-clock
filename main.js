@@ -11,7 +11,7 @@ function createWindow() {
     // Retrieve saved window state
     const savedState = store.get('windowState') || {
         width: 318,
-        height: 424,
+        height: 168, // Default height when no time blocks are present
         x: undefined,
         y: undefined,
         isMaximized: false,
