@@ -11,12 +11,44 @@
             color: var(--label-text-color, #333);
             margin: 0;
             padding: 10px;
-            width: 300px;
-            height: auto;
+            width: 320px;
+            height: 550px; /* Adjusted height to fit all options */
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
             overflow-y: auto;
             -webkit-app-region: drag; /* Make the entire window draggable */
+        }
+
+        .title-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 30px;
+            width: 100%;
+            background: var(--title-bar-bg-color, #f5f5f7);
+            -webkit-app-region: drag;
+            padding: 0 10px;
+            position: relative;
+            z-index: 1000;
+        }
+
+        .title-bar .buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .title-bar button {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+            -webkit-app-region: no-drag;
+        }
+
+        .title-bar button:hover {
+            color: invert(var(--title-bar-bg-color, #f5f5f7));
         }
 
         h2 {
@@ -67,6 +99,15 @@
     </style>
 </head>
 <body>
+    <!-- Title Bar -->
+    <div class="title-bar">
+        <div></div>
+        <div class="buttons">
+            <button id="minimize-btn">−</button>
+            <button id="close-btn">×</button>
+        </div>
+    </div>
+
     <h2>Customize Theme</h2>
 
     <label>
@@ -105,6 +146,7 @@
     </label>
 
     <button id="restore-btn" class="no-drag">↻ Restore Defaults</button>
+    <button id="done-btn" class="no-drag">Done</button>
 
     <script>
         const { ipcRenderer } = require('electron');
@@ -164,6 +206,20 @@
 
             // Save defaults to localStorage
             localStorage.setItem('theme', JSON.stringify(defaultTheme));
+        });
+
+        // Done Button
+        document.getElementById('done-btn').addEventListener('click', () => {
+            ipcRenderer.send('close-theme-window');
+        });
+
+        // Minimize and Close Buttons
+        document.getElementById('minimize-btn').addEventListener('click', () => {
+            ipcRenderer.send('minimize-theme-window');
+        });
+
+        document.getElementById('close-btn').addEventListener('click', () => {
+            ipcRenderer.send('close-theme-window');
         });
     </script>
 </body>
