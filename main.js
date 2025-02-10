@@ -67,16 +67,6 @@ function createWindow() {
         mainWindow.setAlwaysOnTop(isActive);
     });
 
-    // Handle minimize button
-    ipcMain.on('minimize-window', () => {
-        mainWindow.minimize();
-    });
-
-    // Handle close button
-    ipcMain.on('close-window', () => {
-        mainWindow.close();
-    });
-
     // Optional: Open DevTools for debugging
     // mainWindow.webContents.openDevTools();
 
