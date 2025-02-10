@@ -65,7 +65,7 @@
         /* Header */
         header {
             text-align: center;
-            margin-top: 40px;
+            margin-top: 40px; /* Adjusted to account for the fixed title bar */
             margin-bottom: 20px;
             cursor: default;
             user-select: none;
@@ -81,10 +81,13 @@
             font-weight: 600;
             color: var(--title-text-color, #42526e);
             text-align: center;
-            width: 100%;
-            max-width: 300px;
+            width: auto; /* Allow dynamic resizing */
+            max-width: 90%; /* Limit maximum width */
             font-family: var(--title-font-family, 'Inter');
             transition: color 0.3s ease;
+            white-space: nowrap; /* Prevent wrapping */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Add ellipsis for long titles */
         }
 
         .editable-title:focus {
@@ -267,7 +270,7 @@
 <body>
     <!-- Title Bar -->
     <div class="title-bar">
-        <div></div>
+        <span class="editable-title" id="editable-title">🌍 World Clock</span>
         <div class="buttons">
             <button id="minimize-btn">−</button>
             <button id="close-btn">×</button>
@@ -276,9 +279,7 @@
 
     <!-- Header -->
     <header>
-        <h1>
-            <span class="editable-title" id="editable-title">🌍 World Clock</span>
-        </h1>
+        <h1></h1> <!-- Placeholder for spacing -->
     </header>
 
     <div class="controls">
@@ -310,6 +311,8 @@
                 <option value="Etc/GMT-5">UTC+05:00 (Pakistan Standard Time)</option>
                 <option value="Etc/GMT-6">UTC+06:00 (Bangladesh Standard Time)</option>
                 <option value="Etc/GMT-7">UTC+07:00 (Indochina Time)</option>
+                <option value="Etc/GMT-6">UTC+06:00 (Bangladesh Standard Time)</option>
+                <option value="Etc/GMT-7">UTC+07:00 (Indochina Time)</option>
                 <option value="Etc/GMT-8">UTC+08:00 (China Standard Time)</option>
                 <option value="Etc/GMT-9">UTC+09:00 (Japan Standard Time)</option>
                 <option value="Etc/GMT-10">UTC+10:00 (Australian Eastern Standard Time)</option>
@@ -328,7 +331,7 @@
                 <input type="color" id="bg-color-picker" value="#f5f5f7">
             </label>
             <label>
-                Button Color:
+                Primary Color:
                 <input type="color" id="primary-color-picker" value="#0079bf">
             </label>
             <label>
@@ -503,10 +506,7 @@
                 addTimeZone(selectedTimeZone, displayName);
 
                 // Dynamically adjust window height
-                const baseHeight = 300; // Minimum height to accommodate dropdown
-                const blockHeight = 60; // Height per time block
-                const windowHeight = Math.max(baseHeight, 300 + savedTimeZones.length * blockHeight); // Ensure minimum height
-                ipcRenderer.send('resize-window', windowHeight);
+                adjustWindowHeight();
             }
 
             timezoneDropdown.style.display = 'none'; // Hide dropdown after adding
@@ -545,10 +545,7 @@
             timeZoneDiv.remove();
 
             // Dynamically adjust window height
-            const baseHeight = 300; // Minimum height to accommodate dropdown
-            const blockHeight = 60; // Height per time block
-            const windowHeight = Math.max(baseHeight, 300 + savedTimeZones.length * blockHeight); // Ensure minimum height
-            ipcRenderer.send('resize-window', windowHeight);
+            adjustWindowHeight();
         };
 
         // Update time for all time zones every second
@@ -656,7 +653,6 @@
                 .toString(16)
                 .slice(1)}`;
         }
-<<<<<<< HEAD
 
         // Function to dynamically adjust window height
         function adjustWindowHeight() {
@@ -682,8 +678,6 @@
             // Send the new height to the main process
             ipcRenderer.send('resize-window', totalHeight);
         }
-=======
->>>>>>> parent of cb5fd85 (Update index.html fixing window size still.)
     </script>
 </body>
 </html>
