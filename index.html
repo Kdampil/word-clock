@@ -289,6 +289,7 @@
         <!-- Time Zone Dropdown -->
         <div class="timezone-dropdown" id="timezone-dropdown">
             <select id="timezone-select">
+                <option value="Etc/UTC">UTC (Coordinated Universal Time)</option>
                 <option value="Etc/GMT+12">UTC-12:00 (Baker Island Time)</option>
                 <option value="Etc/GMT+11">UTC-11:00 (Niue Time)</option>
                 <option value="Etc/GMT+10">UTC-10:00 (Hawaii-Aleutian Standard Time)</option>
@@ -493,7 +494,9 @@
                 addTimeZone(selectedTimeZone, displayName);
 
                 // Dynamically adjust window height
-                const windowHeight = 168 + savedTimeZones.length * 60; // Start at 168px and grow by 60px per time block
+                const baseHeight = 300; // Minimum height to accommodate dropdown
+                const blockHeight = 60; // Height per time block
+                const windowHeight = Math.max(baseHeight, 300 + savedTimeZones.length * blockHeight); // Ensure minimum height
                 ipcRenderer.send('resize-window', windowHeight);
             }
 
@@ -533,7 +536,9 @@
             timeZoneDiv.remove();
 
             // Dynamically adjust window height
-            const windowHeight = 168 + savedTimeZones.length * 60; // Adjust height based on time zones
+            const baseHeight = 300; // Minimum height to accommodate dropdown
+            const blockHeight = 60; // Height per time block
+            const windowHeight = Math.max(baseHeight, 300 + savedTimeZones.length * blockHeight); // Ensure minimum height
             ipcRenderer.send('resize-window', windowHeight);
         };
 
