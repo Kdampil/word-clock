@@ -9,7 +9,7 @@
     <style>
         :root {
             --time-text-color: #42526e; /* Time display color */
-            --label-text-color: #333; /* New variable for dropdown labels */
+            --label-text-color: #333; /* Separate label text color */
             --primary-color: #0079bf;
             --block-bg-color: #ffffff;
             --title-text-color: #42526e;
@@ -189,6 +189,11 @@
             background: var(--primary-hover-color, #0067a3);
         }
 
+        /* Theme Dropdown Labels */
+        .theme-dropdown label {
+            color: var(--label-text-color); /* Use separate label text color */
+        }
+
         /* Time Zone Container */
         .time-zone-container {
             display: flex;
@@ -363,6 +368,10 @@
                 Time Text Color:
                 <input type="color" id="time-text-color-picker" value="#42526e">
             </label>
+            <label>
+                Label Text Color:
+                <input type="color" id="label-text-color-picker" value="#333">
+            </label>
             <button id="restore-btn" style="margin-top: 10px;">↻ Restore Defaults</button>
         </div>
     </div>
@@ -432,6 +441,7 @@
         const titleTextColorPicker = document.getElementById('title-text-color-picker');
         const blockTitleColorPicker = document.getElementById('block-title-color-picker');
         const timeTextColorPicker = document.getElementById('time-text-color-picker');
+        const labelTextColorPicker = document.getElementById('label-text-color-picker'); // Label text color picker
         const restoreBtn = document.getElementById('restore-btn');
 
         // Toggle dropdown visibility
@@ -455,6 +465,7 @@
                 titleTextColor: '#42526e',
                 blockTitleColor: '#42526e',
                 timeTextColor: '#42526e',
+                labelTextColor: '#333' // Default label text color
             };
 
             // Apply default colors
@@ -466,6 +477,7 @@
             document.documentElement.style.setProperty('--title-text-color', defaultTheme.titleTextColor);
             document.documentElement.style.setProperty('--block-title-color', defaultTheme.blockTitleColor);
             document.documentElement.style.setProperty('--time-text-color', defaultTheme.timeTextColor);
+            document.documentElement.style.setProperty('--label-text-color', defaultTheme.labelTextColor); // Apply label text color
 
             // Reset color pickers
             bgColorPicker.value = defaultTheme.backgroundColor;
@@ -475,6 +487,7 @@
             titleTextColorPicker.value = defaultTheme.titleTextColor;
             blockTitleColorPicker.value = defaultTheme.blockTitleColor;
             timeTextColorPicker.value = defaultTheme.timeTextColor;
+            labelTextColorPicker.value = defaultTheme.labelTextColor; // Reset label text color picker
 
             // Save default theme to localStorage
             localStorage.setItem('theme', JSON.stringify(defaultTheme));
@@ -573,6 +586,7 @@
             titleTextColor: '#42526e',
             blockTitleColor: '#42526e',
             timeTextColor: '#42526e',
+            labelTextColor: '#333' // Default label text color
         };
 
         // Apply saved theme on load
@@ -584,6 +598,7 @@
         document.documentElement.style.setProperty('--title-text-color', savedTheme.titleTextColor);
         document.documentElement.style.setProperty('--block-title-color', savedTheme.blockTitleColor);
         document.documentElement.style.setProperty('--time-text-color', savedTheme.timeTextColor);
+        document.documentElement.style.setProperty('--label-text-color', savedTheme.labelTextColor); // Apply label text color
 
         // Update background color
         bgColorPicker.addEventListener('input', (event) => {
@@ -645,8 +660,18 @@
             const newTimeTextColor = event.target.value;
             document.documentElement.style.setProperty('--time-text-color', newTimeTextColor);
 
-            // Store only the time text color in localStorage
+            // Save only the time text color in localStorage
             savedTheme.timeTextColor = newTimeTextColor;
+            localStorage.setItem('theme', JSON.stringify(savedTheme));
+        });
+
+        // Update label text color separately
+        labelTextColorPicker.addEventListener('input', (event) => {
+            const newLabelTextColor = event.target.value;
+            document.documentElement.style.setProperty('--label-text-color', newLabelTextColor);
+
+            // Save only the label text color in localStorage
+            savedTheme.labelTextColor = newLabelTextColor;
             localStorage.setItem('theme', JSON.stringify(savedTheme));
         });
 
