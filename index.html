@@ -93,6 +93,13 @@
             border-bottom: 1px solid var(--primary-color, #0079bf);
         }
 
+        /* Placeholder Styling */
+        .editable-title[data-placeholder]::before {
+            content: attr(data-placeholder);
+            color: #aaa; /* Placeholder color */
+            pointer-events: none; /* Ensure it doesn't interfere with editing */
+        }
+
         /* Controls */
         .controls {
             margin-bottom: 20px;
@@ -338,10 +345,6 @@
                 <input type="color" id="block-bg-color-picker" value="#ffffff">
             </label>
             <label>
-                Title Bar Background:
-                <input type="color" id="title-bar-bg-color-picker" value="#f5f5f7">
-            </label>
-            <label>
                 Title Text Color:
                 <input type="color" id="title-text-color-picker" value="#42526e">
             </label>
@@ -384,7 +387,7 @@
             ipcRenderer.send('set-always-on-top', isActive);
         });
 
-        // Editable Title
+        // Editable Title Logic
         const editableTitle = document.getElementById('editable-title');
 
         // Enable contentEditable on click
@@ -413,11 +416,11 @@
 
         // Load saved title from localStorage
         const savedTitle = localStorage.getItem('title');
-        editableTitle.textContent = savedTitle || ''; // Allow empty title
-
-        // Optional: Add placeholder styling
-        if (!savedTitle) {
-            editableTitle.setAttribute('data-placeholder', '🌍 World Clock');
+        if (savedTitle) {
+            editableTitle.textContent = savedTitle; // Use saved title
+        } else {
+            editableTitle.textContent = ''; // Clear the title
+            editableTitle.setAttribute('data-placeholder', '🌍 World Clock'); // Set placeholder
             editableTitle.style.color = '#aaa'; // Placeholder color
         }
 
@@ -432,7 +435,6 @@
         const bgColorPicker = document.getElementById('bg-color-picker');
         const primaryColorPicker = document.getElementById('primary-color-picker');
         const blockBgColorPicker = document.getElementById('block-bg-color-picker');
-        const titleBarBgColorPicker = document.getElementById('title-bar-bg-color-picker'); // New picker for title bar
         const titleTextColorPicker = document.getElementById('title-text-color-picker');
         const blockTitleColorPicker = document.getElementById('block-title-color-picker');
         const timeTextColorPicker = document.getElementById('time-text-color-picker');
@@ -455,7 +457,6 @@
                 backgroundColor: '#f5f5f7',
                 primaryColor: '#0079bf',
                 blockBgColor: '#ffffff',
-                titleBarBgColor: '#f5f5f7', // Default title bar background color
                 titleTextColor: '#42526e',
                 blockTitleColor: '#42526e',
                 timeTextColor: '#42526e',
@@ -466,7 +467,6 @@
             document.documentElement.style.setProperty('--primary-color', defaultTheme.primaryColor);
             document.documentElement.style.setProperty('--primary-hover-color', shadeColor(defaultTheme.primaryColor, -10));
             document.documentElement.style.setProperty('--block-bg-color', defaultTheme.blockBgColor);
-            document.documentElement.style.setProperty('--title-bar-bg-color', defaultTheme.titleBarBgColor); // Apply title bar color
             document.documentElement.style.setProperty('--title-text-color', defaultTheme.titleTextColor);
             document.documentElement.style.setProperty('--block-title-color', defaultTheme.blockTitleColor);
             document.documentElement.style.setProperty('--time-text-color', defaultTheme.timeTextColor);
@@ -475,7 +475,6 @@
             bgColorPicker.value = defaultTheme.backgroundColor;
             primaryColorPicker.value = defaultTheme.primaryColor;
             blockBgColorPicker.value = defaultTheme.blockBgColor;
-            titleBarBgColorPicker.value = defaultTheme.titleBarBgColor; // Reset title bar color picker
             titleTextColorPicker.value = defaultTheme.titleTextColor;
             blockTitleColorPicker.value = defaultTheme.blockTitleColor;
             timeTextColorPicker.value = defaultTheme.timeTextColor;
@@ -573,7 +572,6 @@
             backgroundColor: '#f5f5f7',
             primaryColor: '#0079bf',
             blockBgColor: '#ffffff',
-            titleBarBgColor: '#f5f5f7', // Default title bar background color
             titleTextColor: '#42526e',
             blockTitleColor: '#42526e',
             timeTextColor: '#42526e',
@@ -584,7 +582,6 @@
         document.documentElement.style.setProperty('--primary-color', savedTheme.primaryColor);
         document.documentElement.style.setProperty('--primary-hover-color', shadeColor(savedTheme.primaryColor, -10));
         document.documentElement.style.setProperty('--block-bg-color', savedTheme.blockBgColor);
-        document.documentElement.style.setProperty('--title-bar-bg-color', savedTheme.titleBarBgColor); // Apply title bar color
         document.documentElement.style.setProperty('--title-text-color', savedTheme.titleTextColor);
         document.documentElement.style.setProperty('--block-title-color', savedTheme.blockTitleColor);
         document.documentElement.style.setProperty('--time-text-color', savedTheme.timeTextColor);
@@ -615,17 +612,6 @@
             document.documentElement.style.setProperty('--block-bg-color', newBlockBgColor);
             savedTheme.blockBgColor = newBlockBgColor;
             localStorage.setItem('theme', JSON.stringify(savedTheme));
-        });
-
-        // Update title bar background color
-        titleBarBgColorPicker.addEventListener('input', (event) => {
-            const newTitleBarBgColor = event.target.value;
-            document.documentElement.style.setProperty('--title-bar-bg-color', newTitleBarBgColor);
-            savedTheme.titleBarBgColor = newTitleBarBgColor;
-            localStorage.setItem('theme', JSON.stringify(savedTheme));
-
-            // Update button colors dynamically
-            updateButtonColors();
         });
 
         // Update title text color
