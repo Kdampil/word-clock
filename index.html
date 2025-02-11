@@ -393,14 +393,15 @@
 
         editableTitle.addEventListener('blur', () => {
             editableTitle.contentEditable = false;
-            localStorage.setItem('title', editableTitle.textContent);
+
+            // Save the title to localStorage, allowing empty titles
+            const titleText = editableTitle.textContent.trim();
+            localStorage.setItem('title', titleText); // Save even if empty
         });
 
         // Load saved title from localStorage
-        const savedTitle = localStorage.getItem('title');
-        if (savedTitle) {
-            editableTitle.textContent = savedTitle;
-        }
+        const savedTitle = localStorage.getItem('title') || '🌍 World Clock';
+        editableTitle.textContent = savedTitle || ''; // Allow empty title
 
         // Rest of the app's functionality remains unchanged
         const addBtn = document.getElementById('add-btn');
@@ -469,6 +470,9 @@
 
             // Save default theme to localStorage
             localStorage.setItem('theme', JSON.stringify(defaultTheme));
+
+            // Update button colors dynamically
+            updateButtonColors();
         });
 
         // Hide dropdowns when clicking outside
@@ -597,6 +601,9 @@
             document.documentElement.style.setProperty('--primary-hover-color', shadeColor(newPrimaryColor, -10));
             savedTheme.primaryColor = newPrimaryColor;
             localStorage.setItem('theme', JSON.stringify(savedTheme));
+
+            // Update button colors dynamically
+            updateButtonColors();
         });
 
         // Update time block background color
@@ -613,6 +620,9 @@
             document.documentElement.style.setProperty('--title-bar-bg-color', newTitleBarBgColor);
             savedTheme.titleBarBgColor = newTitleBarBgColor;
             localStorage.setItem('theme', JSON.stringify(savedTheme));
+
+            // Update button colors dynamically
+            updateButtonColors();
         });
 
         // Update title text color
@@ -653,6 +663,30 @@
                 .slice(1)}`;
         }
 
+        // Helper function to invert a color
+        function invertColor(hex) {
+            hex = hex.replace('#', '');
+            const r = (255 - parseInt(hex.slice(0, 2), 16)).toString(16).padStart(2, '0');
+            const g = (255 - parseInt(hex.slice(2, 4), 16)).toString(16).padStart(2, '0');
+            const b = (255 - parseInt(hex.slice(4, 6), 16)).toString(16).padStart(2, '0');
+            return `#${r}${g}${b}`;
+        }
+
+        // Update button colors dynamically
+        function updateButtonColors() {
+            const titleBarBgColor = getComputedStyle(document.documentElement)
+                .getPropertyValue('--title-bar-bg-color')
+                .trim();
+
+            const invertedColor = invertColor(titleBarBgColor);
+
+            const minimizeBtn = document.getElementById('minimize-btn');
+            const closeBtn = document.getElementById('close-btn');
+
+            minimizeBtn.style.color = invertedColor;
+            closeBtn.style.color = invertedColor;
+        }
+
         // Track the current height to avoid unnecessary resizing
         let currentHeight = 450; // Default height
 
@@ -674,8 +708,7 @@
             const bottomPadding = 20;
 
             // Calculate total height
-            const totalHeight =
-                Math.max(dropdownHeight, themeDropdownHeight) + timeBlockHeight + bottomPadding;
+            const totalHeight = dropdownHeight + themeDropdownHeight + timeBlockHeight + bottomPadding;
 
             // Only send the resize message if the height has changed significantly
             if (Math.abs(totalHeight - currentHeight) > 5) {
@@ -683,6 +716,9 @@
                 ipcRenderer.send('resize-window', totalHeight);
             }
         }
+
+        // Initialize button colors on load
+        updateButtonColors();
     </script>
 </body>
 </html>
