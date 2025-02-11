@@ -93,13 +93,6 @@
             border-bottom: 1px solid var(--primary-color, #0079bf);
         }
 
-        /* Placeholder Styling */
-        .editable-title[data-placeholder]::before {
-            content: attr(data-placeholder);
-            color: #aaa; /* Placeholder color */
-            pointer-events: none; /* Ensure it doesn't interfere with editing */
-        }
-
         /* Controls */
         .controls {
             margin-bottom: 20px;
@@ -389,39 +382,25 @@
 
         // Editable Title Logic
         const editableTitle = document.getElementById('editable-title');
-
-        // Enable contentEditable on click
         editableTitle.addEventListener('click', () => {
+            if (editableTitle.textContent === "🌍 World Clock") {
+                editableTitle.textContent = ""; // Clear the default text on first click
+            }
             editableTitle.contentEditable = true;
             editableTitle.focus();
         });
-
-        // Save the title on blur
         editableTitle.addEventListener('blur', () => {
-            const titleText = editableTitle.textContent.trim();
-            localStorage.setItem('title', titleText); // Save even if empty
-
-            // Keep contentEditable enabled for future edits
-            editableTitle.contentEditable = true;
-
-            // Handle placeholder behavior
-            if (titleText === '') {
-                editableTitle.setAttribute('data-placeholder', '🌍 World Clock');
-                editableTitle.style.color = '#aaa'; // Placeholder color
-            } else {
-                editableTitle.removeAttribute('data-placeholder');
-                editableTitle.style.color = ''; // Reset to default color
+            editableTitle.contentEditable = false;
+            if (editableTitle.textContent.trim() === "") {
+                editableTitle.textContent = "🌍 World Clock"; // Restore default if left empty
             }
+            localStorage.setItem('title', editableTitle.textContent);
         });
 
         // Load saved title from localStorage
         const savedTitle = localStorage.getItem('title');
         if (savedTitle) {
-            editableTitle.textContent = savedTitle; // Use saved title
-        } else {
-            editableTitle.textContent = ''; // Clear the title
-            editableTitle.setAttribute('data-placeholder', '🌍 World Clock'); // Set placeholder
-            editableTitle.style.color = '#aaa'; // Placeholder color
+            editableTitle.textContent = savedTitle;
         }
 
         // Rest of the app's functionality remains unchanged
