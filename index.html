@@ -424,17 +424,11 @@
         addBtn.addEventListener('click', () => {
             timezoneDropdown.style.display = timezoneDropdown.style.display === 'block' ? 'none' : 'block';
             themeDropdown.style.display = 'none'; // Hide theme dropdown when showing timezone dropdown
-
-            // Dynamically adjust window height
-            adjustWindowHeight();
         });
 
         gearBtn.addEventListener('click', () => {
             themeDropdown.style.display = themeDropdown.style.display === 'block' ? 'none' : 'block';
             timezoneDropdown.style.display = 'none'; // Hide timezone dropdown when showing theme dropdown
-
-            // Dynamically adjust window height
-            adjustWindowHeight();
         });
 
         // Restore default colors
@@ -483,9 +477,6 @@
             if (!themeDropdown.contains(event.target) && event.target !== gearBtn) {
                 themeDropdown.style.display = 'none';
             }
-
-            // Dynamically adjust window height
-            adjustWindowHeight();
         });
 
         // Load saved time zones from localStorage
@@ -507,9 +498,6 @@
                 savedTimeZones.push(newTimeZone);
                 localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
                 addTimeZone(selectedTimeZone, displayName);
-
-                // Dynamically adjust window height
-                adjustWindowHeight();
             }
 
             timezoneDropdown.style.display = 'none'; // Hide dropdown after adding
@@ -546,9 +534,6 @@
             localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
             const timeZoneDiv = document.querySelector(`[data-time-zone="${timeZone}"]`);
             timeZoneDiv.remove();
-
-            // Dynamically adjust window height
-            adjustWindowHeight();
         };
 
         // Update time for all time zones every second
@@ -685,36 +670,6 @@
 
             minimizeBtn.style.color = invertedColor;
             closeBtn.style.color = invertedColor;
-        }
-
-        // Track the current height to avoid unnecessary resizing
-        let currentHeight = 450; // Default height
-
-        // Function to dynamically adjust window height
-        function adjustWindowHeight() {
-            const dropdown = document.getElementById('timezone-dropdown');
-            const themeDropdown = document.getElementById('theme-dropdown');
-            const timeZoneContainer = document.getElementById('time-zone-container');
-
-            // Measure the height of visible elements
-            const dropdownHeight = dropdown.style.display === 'block' ? dropdown.offsetHeight : 0;
-            const themeDropdownHeight = themeDropdown.style.display === 'block' ? themeDropdown.offsetHeight : 0;
-            const timeBlockHeight = Array.from(timeZoneContainer.children).reduce(
-                (total, block) => total + block.offsetHeight,
-                0
-            );
-
-            // Fixed padding at the bottom
-            const bottomPadding = 20;
-
-            // Calculate total height
-            const totalHeight = dropdownHeight + themeDropdownHeight + timeBlockHeight + bottomPadding;
-
-            // Only send the resize message if the height has changed significantly
-            if (Math.abs(totalHeight - currentHeight) > 5) {
-                currentHeight = totalHeight;
-                ipcRenderer.send('resize-window', totalHeight);
-            }
         }
 
         // Initialize button colors on load
