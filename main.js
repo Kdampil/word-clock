@@ -80,23 +80,6 @@ function createWindow() {
             mainWindow.close();
         }
     });
-
-    // Handle Dynamic Window Height Adjustment
-    ipcMain.on('resize-window', (event, newHeight) => {
-        if (mainWindow) {
-            const currentBounds = mainWindow.getBounds();
-
-            // Only resize if the height has changed significantly
-            if (Math.abs(newHeight - currentBounds.height) > 5) {
-                mainWindow.setBounds({
-                    width: currentBounds.width,
-                    height: newHeight,
-                    x: currentBounds.x,
-                    y: currentBounds.y,
-                });
-            }
-        }
-    });
 }
 
 // App lifecycle events
