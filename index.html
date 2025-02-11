@@ -269,7 +269,7 @@
 <body>
     <!-- Title Bar -->
     <div class="title-bar">
-        <div></div> <!-- Placeholder for draggable area -->
+        <span></span> <!-- Placeholder for draggable area -->
         <div class="buttons">
             <button id="minimize-btn">−</button>
             <button id="close-btn">×</button>
@@ -653,6 +653,9 @@
                 .slice(1)}`;
         }
 
+        // Track the current height to avoid unnecessary resizing
+        let currentHeight = 450; // Default height
+
         // Function to dynamically adjust window height
         function adjustWindowHeight() {
             const dropdown = document.getElementById('timezone-dropdown');
@@ -674,8 +677,11 @@
             const totalHeight =
                 Math.max(dropdownHeight, themeDropdownHeight) + timeBlockHeight + bottomPadding;
 
-            // Send the new height to the main process
-            ipcRenderer.send('resize-window', totalHeight);
+            // Only send the resize message if the height has changed significantly
+            if (Math.abs(totalHeight - currentHeight) > 5) {
+                currentHeight = totalHeight;
+                ipcRenderer.send('resize-window', totalHeight);
+            }
         }
     </script>
 </body>
