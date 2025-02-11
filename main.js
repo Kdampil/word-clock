@@ -88,12 +88,15 @@ function createWindow() {
             const minHeight = 300; // Minimum height to accommodate dropdown
             const adjustedHeight = Math.max(minHeight, newHeight); // Ensure height never falls below minimum
 
-            mainWindow.setBounds({
-                width: currentBounds.width,
-                height: adjustedHeight,
-                x: currentBounds.x,
-                y: currentBounds.y,
-            });
+            // Only resize if the height has changed significantly
+            if (Math.abs(adjustedHeight - currentBounds.height) > 5) {
+                mainWindow.setBounds({
+                    width: currentBounds.width,
+                    height: adjustedHeight,
+                    x: currentBounds.x,
+                    y: currentBounds.y,
+                });
+            }
         }
     });
 }
