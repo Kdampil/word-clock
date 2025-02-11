@@ -14,6 +14,7 @@
             --block-bg-color: #ffffff;
             --title-text-color: #42526e;
             --block-title-color: #42526e;
+            --title-bar-bg-color: #f5f5f7; /* Title bar background color */
         }
 
         * {
@@ -42,7 +43,7 @@
             align-items: center;
             height: 30px;
             width: 100%;
-            background: var(--title-bar-bg-color, #f5f5f7);
+            background: var(--title-bar-bg-color); /* Use the title bar background color */
             position: fixed;
             top: 0;
             left: 0;
@@ -347,6 +348,10 @@
                 <input type="color" id="block-bg-color-picker" value="#ffffff">
             </label>
             <label>
+                Title Bar Background:
+                <input type="color" id="title-bar-bg-color-picker" value="#f5f5f7">
+            </label>
+            <label>
                 Title Text Color:
                 <input type="color" id="title-text-color-picker" value="#42526e">
             </label>
@@ -423,6 +428,7 @@
         const bgColorPicker = document.getElementById('bg-color-picker');
         const primaryColorPicker = document.getElementById('primary-color-picker');
         const blockBgColorPicker = document.getElementById('block-bg-color-picker');
+        const titleBarBgColorPicker = document.getElementById('title-bar-bg-color-picker'); // Title bar background color picker
         const titleTextColorPicker = document.getElementById('title-text-color-picker');
         const blockTitleColorPicker = document.getElementById('block-title-color-picker');
         const timeTextColorPicker = document.getElementById('time-text-color-picker');
@@ -445,6 +451,7 @@
                 backgroundColor: '#f5f5f7',
                 primaryColor: '#0079bf',
                 blockBgColor: '#ffffff',
+                titleBarBgColor: '#f5f5f7', // Default title bar background color
                 titleTextColor: '#42526e',
                 blockTitleColor: '#42526e',
                 timeTextColor: '#42526e',
@@ -455,6 +462,7 @@
             document.documentElement.style.setProperty('--primary-color', defaultTheme.primaryColor);
             document.documentElement.style.setProperty('--primary-hover-color', shadeColor(defaultTheme.primaryColor, -10));
             document.documentElement.style.setProperty('--block-bg-color', defaultTheme.blockBgColor);
+            document.documentElement.style.setProperty('--title-bar-bg-color', defaultTheme.titleBarBgColor); // Apply title bar background color
             document.documentElement.style.setProperty('--title-text-color', defaultTheme.titleTextColor);
             document.documentElement.style.setProperty('--block-title-color', defaultTheme.blockTitleColor);
             document.documentElement.style.setProperty('--time-text-color', defaultTheme.timeTextColor);
@@ -463,6 +471,7 @@
             bgColorPicker.value = defaultTheme.backgroundColor;
             primaryColorPicker.value = defaultTheme.primaryColor;
             blockBgColorPicker.value = defaultTheme.blockBgColor;
+            titleBarBgColorPicker.value = defaultTheme.titleBarBgColor; // Reset title bar background color picker
             titleTextColorPicker.value = defaultTheme.titleTextColor;
             blockTitleColorPicker.value = defaultTheme.blockTitleColor;
             timeTextColorPicker.value = defaultTheme.timeTextColor;
@@ -560,6 +569,7 @@
             backgroundColor: '#f5f5f7',
             primaryColor: '#0079bf',
             blockBgColor: '#ffffff',
+            titleBarBgColor: '#f5f5f7', // Default title bar background color
             titleTextColor: '#42526e',
             blockTitleColor: '#42526e',
             timeTextColor: '#42526e',
@@ -570,6 +580,7 @@
         document.documentElement.style.setProperty('--primary-color', savedTheme.primaryColor);
         document.documentElement.style.setProperty('--primary-hover-color', shadeColor(savedTheme.primaryColor, -10));
         document.documentElement.style.setProperty('--block-bg-color', savedTheme.blockBgColor);
+        document.documentElement.style.setProperty('--title-bar-bg-color', savedTheme.titleBarBgColor); // Apply title bar background color
         document.documentElement.style.setProperty('--title-text-color', savedTheme.titleTextColor);
         document.documentElement.style.setProperty('--block-title-color', savedTheme.blockTitleColor);
         document.documentElement.style.setProperty('--time-text-color', savedTheme.timeTextColor);
@@ -600,6 +611,17 @@
             document.documentElement.style.setProperty('--block-bg-color', newBlockBgColor);
             savedTheme.blockBgColor = newBlockBgColor;
             localStorage.setItem('theme', JSON.stringify(savedTheme));
+        });
+
+        // Update title bar background color
+        titleBarBgColorPicker.addEventListener('input', (event) => {
+            const newTitleBarBgColor = event.target.value;
+            document.documentElement.style.setProperty('--title-bar-bg-color', newTitleBarBgColor);
+            savedTheme.titleBarBgColor = newTitleBarBgColor;
+            localStorage.setItem('theme', JSON.stringify(savedTheme));
+
+            // Update button colors dynamically
+            updateButtonColors();
         });
 
         // Update title text color
