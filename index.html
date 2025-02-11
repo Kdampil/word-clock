@@ -55,7 +55,6 @@
             opacity: 0;
             transition: opacity 0.3s ease;
             -webkit-app-region: no-drag;
-            color: invert(var(--title-bar-bg-color, #f5f5f7));
         }
 
         .title-bar:hover button {
@@ -69,7 +68,7 @@
             margin-bottom: 20px;
             cursor: default;
             user-select: none;
-            height: 40px;
+            height: auto; /* Allow dynamic resizing */
         }
 
         .editable-title {
@@ -270,7 +269,7 @@
 <body>
     <!-- Title Bar -->
     <div class="title-bar">
-        <span class="editable-title" id="editable-title">🌍 World Clock</span>
+        <div></div> <!-- Placeholder for draggable area -->
         <div class="buttons">
             <button id="minimize-btn">−</button>
             <button id="close-btn">×</button>
@@ -279,7 +278,9 @@
 
     <!-- Header -->
     <header>
-        <h1></h1> <!-- Placeholder for spacing -->
+        <h1>
+            <span class="editable-title" id="editable-title">🌍 World Clock</span>
+        </h1>
     </header>
 
     <div class="controls">
@@ -309,8 +310,6 @@
                 <option value="Etc/GMT-3">UTC+03:00 (East Africa Time)</option>
                 <option value="Etc/GMT-4">UTC+04:00 (Gulf Standard Time)</option>
                 <option value="Etc/GMT-5">UTC+05:00 (Pakistan Standard Time)</option>
-                <option value="Etc/GMT-6">UTC+06:00 (Bangladesh Standard Time)</option>
-                <option value="Etc/GMT-7">UTC+07:00 (Indochina Time)</option>
                 <option value="Etc/GMT-6">UTC+06:00 (Bangladesh Standard Time)</option>
                 <option value="Etc/GMT-7">UTC+07:00 (Indochina Time)</option>
                 <option value="Etc/GMT-8">UTC+08:00 (China Standard Time)</option>
