@@ -31,7 +31,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 30px;
+            height: 20px;
             width: 100%;
             background: var(--title-bar-bg-color, #f5f5f7); /* Custom title bar color */
             position: fixed;
@@ -285,7 +285,7 @@
 
     <div class="controls">
         <button class="add-btn" id="add-btn">🌐</button> <!-- Globe Icon -->
-        <button class="gear-btn" id="gear-btn">⚙️</button>
+        <button class="gear-btn" id="gear-btn">🎨</button>
         <button class="pin-btn" id="pin-btn">📌</button>
 
         <!-- Time Zone Dropdown -->
@@ -386,22 +386,48 @@
 
         // Editable Title
         const editableTitle = document.getElementById('editable-title');
+
+        // Enable contentEditable on click
         editableTitle.addEventListener('click', () => {
             editableTitle.contentEditable = true;
             editableTitle.focus();
         });
 
+        // Save the title on blur
         editableTitle.addEventListener('blur', () => {
-            editableTitle.contentEditable = false;
-
             // Save the title to localStorage, allowing empty titles
             const titleText = editableTitle.textContent.trim();
-            localStorage.setItem('title', titleText); // Save even if empty
+            localStorage.setItem('title', titleText);
+
+            // Keep contentEditable enabled for future edits
+            editableTitle.contentEditable = true;
         });
 
         // Load saved title from localStorage
-        const savedTitle = localStorage.getItem('title') || '🌍 World Clock';
+        const savedTitle = localStorage.getItem('title');
         editableTitle.textContent = savedTitle || ''; // Allow empty title
+
+        // Optional: Add a placeholder for empty titles
+        if (!savedTitle) {
+            editableTitle.setAttribute('data-placeholder', '🌍 World Clock');
+            editableTitle.style.color = '#aaa'; // Placeholder color
+        }
+
+        // Handle focus to remove placeholder styling
+        editableTitle.addEventListener('focus', () => {
+            if (editableTitle.textContent.trim() === '') {
+                editableTitle.removeAttribute('data-placeholder');
+                editableTitle.style.color = ''; // Reset to default color
+            }
+        });
+
+        // Handle blur to restore placeholder if empty
+        editableTitle.addEventListener('blur', () => {
+            if (editableTitle.textContent.trim() === '') {
+                editableTitle.setAttribute('data-placeholder', '🌍 World Clock');
+                editableTitle.style.color = '#aaa'; // Placeholder color
+            }
+        });
 
         // Rest of the app's functionality remains unchanged
         const addBtn = document.getElementById('add-btn');
