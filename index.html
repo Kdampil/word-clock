@@ -15,60 +15,25 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: var(--block-bg-color, #f5f5f7);
-            color: var(--time-text-color, #333);
+            background: #f5f5f7;
+            color: #333;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: center;
             overflow: hidden;
             transition: background 0.3s ease;
         }
 
-        /* Title Bar */
-        .title-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 30px;
-            width: 100%;
-            background: var(--title-bar-bg-color, #f5f5f7); /* Custom title bar color */
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1000;
-            -webkit-app-region: drag;
-            padding: 0 10px;
-        }
-
-        .title-bar .buttons {
-            display: flex;
-            gap: 5px;
-        }
-
-        .title-bar button {
-            background: none;
-            border: none;
-            font-size: 1rem;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            -webkit-app-region: no-drag;
-        }
-
-        .title-bar:hover button {
-            opacity: 1;
-        }
-
-        /* Header */
         header {
             text-align: center;
-            margin-top: 40px; /* Adjusted to account for the fixed title bar */
             margin-bottom: 20px;
-            cursor: default;
-            user-select: none;
-            height: auto; /* Allow dynamic resizing */
+            cursor: move; /* Visual cue for dragging */
+            user-select: none; /* Prevent text selection */
+            -webkit-app-region: drag; /* Make the header draggable */
+            height: 40px; /* Fixed height for the header */
+            position: relative;
         }
 
         .editable-title {
@@ -80,20 +45,17 @@
             font-weight: 600;
             color: var(--title-text-color, #42526e);
             text-align: center;
-            width: auto; /* Allow dynamic resizing */
-            max-width: 90%; /* Limit maximum width */
-            font-family: var(--title-font-family, 'Inter');
+            width: 100%;
+            max-width: 300px;
+            font-family: 'Inter', sans-serif;
             transition: color 0.3s ease;
-            white-space: nowrap; /* Prevent wrapping */
-            overflow: hidden;
-            text-overflow: ellipsis; /* Add ellipsis for long titles */
+            -webkit-app-region: no-drag; /* Exclude the title text from being draggable */
         }
 
         .editable-title:focus {
             border-bottom: 1px solid var(--primary-color, #0079bf);
         }
 
-        /* Controls */
         .controls {
             margin-bottom: 20px;
             position: relative;
@@ -117,7 +79,7 @@
             cursor: pointer;
             transition: transform 0.3s ease, background 0.3s ease;
             font-family: 'Inter', sans-serif;
-            -webkit-app-region: no-drag;
+            -webkit-app-region: no-drag; /* Prevent dragging on buttons */
         }
 
         .add-btn:hover,
@@ -130,7 +92,6 @@
             background: var(--primary-hover-color, #0067a3);
         }
 
-        /* Time Zone Dropdown */
         .timezone-dropdown,
         .theme-dropdown {
             position: absolute;
@@ -144,8 +105,6 @@
             display: none;
             z-index: 10;
             width: 300px;
-            max-height: 300px; /* Make dropdown scrollable */
-            overflow-y: auto; /* Enable scrolling */
         }
 
         .timezone-dropdown select,
@@ -156,7 +115,7 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             background: white;
-            color: var(--label-text-color, #333); /* Separate label text color */
+            color: #333;
             font-family: 'Inter', sans-serif;
         }
 
@@ -179,7 +138,6 @@
             background: var(--primary-hover-color, #0067a3);
         }
 
-        /* Time Zone Container */
         .time-zone-container {
             display: flex;
             flex-direction: column;
@@ -187,7 +145,6 @@
             align-items: center;
             width: 90vw;
             max-width: 350px;
-            margin-top: 20px;
         }
 
         .time-zone {
@@ -213,7 +170,7 @@
             color: var(--block-title-color, #42526e);
             font-family: 'Inter', sans-serif;
             transition: color 0.3s ease;
-            text-align: center;
+            text-align: center; /* Ensure text remains centered */
         }
 
         .time-zone h2 span {
@@ -267,16 +224,6 @@
     </style>
 </head>
 <body>
-    <!-- Title Bar -->
-    <div class="title-bar">
-        <span></span> <!-- Placeholder for draggable area -->
-        <div class="buttons">
-            <button id="minimize-btn">−</button>
-            <button id="close-btn">×</button>
-        </div>
-    </div>
-
-    <!-- Header -->
     <header>
         <h1>
             <span class="editable-title" id="editable-title">🌍 World Clock</span>
@@ -284,7 +231,7 @@
     </header>
 
     <div class="controls">
-        <button class="add-btn" id="add-btn">🌐</button> <!-- Globe Icon -->
+        <button class="add-btn" id="add-btn">+</button>
         <button class="gear-btn" id="gear-btn">⚙️</button>
         <button class="pin-btn" id="pin-btn">📌</button>
 
@@ -338,10 +285,6 @@
                 <input type="color" id="block-bg-color-picker" value="#ffffff">
             </label>
             <label>
-                Title Bar Background:
-                <input type="color" id="title-bar-bg-color-picker" value="#f5f5f7">
-            </label>
-            <label>
                 Title Text Color:
                 <input type="color" id="title-text-color-picker" value="#42526e">
             </label>
@@ -364,15 +307,6 @@
     <script>
         const { ipcRenderer } = require('electron');
 
-        // Minimize and Close Buttons
-        document.getElementById('minimize-btn').addEventListener('click', () => {
-            ipcRenderer.send('minimize-window');
-        });
-
-        document.getElementById('close-btn').addEventListener('click', () => {
-            ipcRenderer.send('close-window');
-        });
-
         // Toggle "Always on Top"
         const pinBtn = document.getElementById('pin-btn');
         pinBtn.addEventListener('click', () => {
@@ -386,39 +320,20 @@
 
         // Editable Title
         const editableTitle = document.getElementById('editable-title');
-
-        // Enable contentEditable on click
         editableTitle.addEventListener('click', () => {
             editableTitle.contentEditable = true;
             editableTitle.focus();
         });
 
-        // Save the title on blur
         editableTitle.addEventListener('blur', () => {
-            const titleText = editableTitle.textContent.trim();
-            localStorage.setItem('title', titleText); // Save even if empty
-
-            // Keep contentEditable enabled for future edits
-            editableTitle.contentEditable = true;
-
-            // Handle placeholder behavior
-            if (titleText === '') {
-                editableTitle.setAttribute('data-placeholder', '🌍 World Clock');
-                editableTitle.style.color = '#aaa'; // Placeholder color
-            } else {
-                editableTitle.removeAttribute('data-placeholder');
-                editableTitle.style.color = ''; // Reset to default color
-            }
+            editableTitle.contentEditable = false;
+            localStorage.setItem('title', editableTitle.textContent);
         });
 
         // Load saved title from localStorage
         const savedTitle = localStorage.getItem('title');
-        editableTitle.textContent = savedTitle || ''; // Allow empty title
-
-        // Optional: Add placeholder styling
-        if (!savedTitle) {
-            editableTitle.setAttribute('data-placeholder', '🌍 World Clock');
-            editableTitle.style.color = '#aaa'; // Placeholder color
+        if (savedTitle) {
+            editableTitle.textContent = savedTitle;
         }
 
         // Rest of the app's functionality remains unchanged
@@ -432,7 +347,6 @@
         const bgColorPicker = document.getElementById('bg-color-picker');
         const primaryColorPicker = document.getElementById('primary-color-picker');
         const blockBgColorPicker = document.getElementById('block-bg-color-picker');
-        const titleBarBgColorPicker = document.getElementById('title-bar-bg-color-picker'); // New picker for title bar
         const titleTextColorPicker = document.getElementById('title-text-color-picker');
         const blockTitleColorPicker = document.getElementById('block-title-color-picker');
         const timeTextColorPicker = document.getElementById('time-text-color-picker');
@@ -455,7 +369,6 @@
                 backgroundColor: '#f5f5f7',
                 primaryColor: '#0079bf',
                 blockBgColor: '#ffffff',
-                titleBarBgColor: '#f5f5f7', // Default title bar background color
                 titleTextColor: '#42526e',
                 blockTitleColor: '#42526e',
                 timeTextColor: '#42526e',
@@ -466,7 +379,6 @@
             document.documentElement.style.setProperty('--primary-color', defaultTheme.primaryColor);
             document.documentElement.style.setProperty('--primary-hover-color', shadeColor(defaultTheme.primaryColor, -10));
             document.documentElement.style.setProperty('--block-bg-color', defaultTheme.blockBgColor);
-            document.documentElement.style.setProperty('--title-bar-bg-color', defaultTheme.titleBarBgColor); // Apply title bar color
             document.documentElement.style.setProperty('--title-text-color', defaultTheme.titleTextColor);
             document.documentElement.style.setProperty('--block-title-color', defaultTheme.blockTitleColor);
             document.documentElement.style.setProperty('--time-text-color', defaultTheme.timeTextColor);
@@ -475,16 +387,12 @@
             bgColorPicker.value = defaultTheme.backgroundColor;
             primaryColorPicker.value = defaultTheme.primaryColor;
             blockBgColorPicker.value = defaultTheme.blockBgColor;
-            titleBarBgColorPicker.value = defaultTheme.titleBarBgColor; // Reset title bar color picker
             titleTextColorPicker.value = defaultTheme.titleTextColor;
             blockTitleColorPicker.value = defaultTheme.blockTitleColor;
             timeTextColorPicker.value = defaultTheme.timeTextColor;
 
             // Save default theme to localStorage
             localStorage.setItem('theme', JSON.stringify(defaultTheme));
-
-            // Update button colors dynamically
-            updateButtonColors();
         });
 
         // Hide dropdowns when clicking outside
@@ -573,7 +481,6 @@
             backgroundColor: '#f5f5f7',
             primaryColor: '#0079bf',
             blockBgColor: '#ffffff',
-            titleBarBgColor: '#f5f5f7', // Default title bar background color
             titleTextColor: '#42526e',
             blockTitleColor: '#42526e',
             timeTextColor: '#42526e',
@@ -584,10 +491,16 @@
         document.documentElement.style.setProperty('--primary-color', savedTheme.primaryColor);
         document.documentElement.style.setProperty('--primary-hover-color', shadeColor(savedTheme.primaryColor, -10));
         document.documentElement.style.setProperty('--block-bg-color', savedTheme.blockBgColor);
-        document.documentElement.style.setProperty('--title-bar-bg-color', savedTheme.titleBarBgColor); // Apply title bar color
         document.documentElement.style.setProperty('--title-text-color', savedTheme.titleTextColor);
         document.documentElement.style.setProperty('--block-title-color', savedTheme.blockTitleColor);
         document.documentElement.style.setProperty('--time-text-color', savedTheme.timeTextColor);
+
+        bgColorPicker.value = savedTheme.backgroundColor;
+        primaryColorPicker.value = savedTheme.primaryColor;
+        blockBgColorPicker.value = savedTheme.blockBgColor;
+        titleTextColorPicker.value = savedTheme.titleTextColor;
+        blockTitleColorPicker.value = savedTheme.blockTitleColor;
+        timeTextColorPicker.value = savedTheme.timeTextColor;
 
         // Update background color
         bgColorPicker.addEventListener('input', (event) => {
@@ -597,16 +510,13 @@
             localStorage.setItem('theme', JSON.stringify(savedTheme));
         });
 
-        // Update button color
+        // Update primary color
         primaryColorPicker.addEventListener('input', (event) => {
             const newPrimaryColor = event.target.value;
             document.documentElement.style.setProperty('--primary-color', newPrimaryColor);
             document.documentElement.style.setProperty('--primary-hover-color', shadeColor(newPrimaryColor, -10));
             savedTheme.primaryColor = newPrimaryColor;
             localStorage.setItem('theme', JSON.stringify(savedTheme));
-
-            // Update button colors dynamically
-            updateButtonColors();
         });
 
         // Update time block background color
@@ -617,17 +527,6 @@
             localStorage.setItem('theme', JSON.stringify(savedTheme));
         });
 
-        // Update title bar background color
-        titleBarBgColorPicker.addEventListener('input', (event) => {
-            const newTitleBarBgColor = event.target.value;
-            document.documentElement.style.setProperty('--title-bar-bg-color', newTitleBarBgColor);
-            savedTheme.titleBarBgColor = newTitleBarBgColor;
-            localStorage.setItem('theme', JSON.stringify(savedTheme));
-
-            // Update button colors dynamically
-            updateButtonColors();
-        });
-
         // Update title text color
         titleTextColorPicker.addEventListener('input', (event) => {
             const newTitleTextColor = event.target.value;
@@ -636,7 +535,7 @@
             localStorage.setItem('theme', JSON.stringify(savedTheme));
         });
 
-        // Update time block title color
+        // Update time block title text color
         blockTitleColorPicker.addEventListener('input', (event) => {
             const newBlockTitleColor = event.target.value;
             document.documentElement.style.setProperty('--block-title-color', newBlockTitleColor);
@@ -665,33 +564,6 @@
                 .toString(16)
                 .slice(1)}`;
         }
-
-        // Helper function to invert a color
-        function invertColor(hex) {
-            hex = hex.replace('#', '');
-            const r = (255 - parseInt(hex.slice(0, 2), 16)).toString(16).padStart(2, '0');
-            const g = (255 - parseInt(hex.slice(2, 4), 16)).toString(16).padStart(2, '0');
-            const b = (255 - parseInt(hex.slice(4, 6), 16)).toString(16).padStart(2, '0');
-            return `#${r}${g}${b}`;
-        }
-
-        // Update button colors dynamically
-        function updateButtonColors() {
-            const titleBarBgColor = getComputedStyle(document.documentElement)
-                .getPropertyValue('--title-bar-bg-color')
-                .trim();
-
-            const invertedColor = invertColor(titleBarBgColor);
-
-            const minimizeBtn = document.getElementById('minimize-btn');
-            const closeBtn = document.getElementById('close-btn');
-
-            minimizeBtn.style.color = invertedColor;
-            closeBtn.style.color = invertedColor;
-        }
-
-        // Initialize button colors on load
-        updateButtonColors();
     </script>
 </body>
 </html>
