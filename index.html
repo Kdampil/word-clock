@@ -259,25 +259,28 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px; /* Space between groups (hours, minutes, seconds, AM/PM) */
+            gap: 10px; /* 10px space between groups */
         }
 
-        .group {
+        .time-group {
             display: flex;
-            gap: 2px; /* Small space between digits within the same group */
+            gap: 2px; /* 2px gap between digits within the same group */
+            align-items: center;
         }
 
         .digit {
             position: relative;
-            float: left;
-            width: 12%; /* Increased width for larger digits */
-            height: 30px; /* Increased height for larger digits */
+            width: 12%;
+            height: 30px;
             background-color: var(--flipColour);
             border-radius: 2px;
             text-align: center;
             font-family: 'Oswald', sans-serif;
-            font-size: 21px; /* Increased font size (150%) */
-            overflow: hidden; /* Ensure content stays within bounds */
+            font-size: 21px;
+        }
+
+        .am-pm-digit {
+            width: 20%;
         }
 
         .base {
@@ -307,7 +310,6 @@
             content: attr(data-content);
             position: absolute;
             left: 50%;
-            transform: translateX(-50%);
         }
 
         .flap.front::before,
@@ -659,6 +661,7 @@
         // Load saved time zones from localStorage
         let savedTimeZones = JSON.parse(localStorage.getItem('timeZones')) || [];
         savedTimeZones.forEach(({ timeZone, displayName }) => addTimeZone(timeZone, displayName));
+
         // Add a new time zone
         confirmTimezoneButton.addEventListener('click', () => {
             const selectedTimeZone = timezoneSelect.value;
@@ -688,7 +691,7 @@
             timeZoneDiv.innerHTML = `
                 <h2><span contenteditable="true" class="editable-name">${displayName}</span></h2>
                 <div class="clock">
-                    <div class="group">
+                    <div class="time-group">
                         <div class="digit tenhour">
                             <span class="base">0</span>
                             <div class="flap over front"></div>
@@ -702,7 +705,7 @@
                             <div class="flap under"></div>
                         </div>
                     </div>
-                    <div class="group">
+                    <div class="time-group">
                         <div class="digit tenmin">
                             <span class="base">0</span>
                             <div class="flap over front"></div>
@@ -716,7 +719,7 @@
                             <div class="flap under"></div>
                         </div>
                     </div>
-                    <div class="group">
+                    <div class="time-group">
                         <div class="digit tensec">
                             <span class="base">0</span>
                             <div class="flap over front"></div>
@@ -730,7 +733,7 @@
                             <div class="flap under"></div>
                         </div>
                     </div>
-                    <div class="group">
+                    <div class="time-group">
                         <div class="digit am-pm-digit">
                             <span class="base">AM</span>
                             <div class="flap over front"></div>
