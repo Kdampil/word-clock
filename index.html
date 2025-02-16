@@ -260,7 +260,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 2px; /* Small space between digits */
+            gap: 10px; /* Increased spacing between digits */
         }
 
         .digit {
@@ -380,6 +380,22 @@
             }
         }
 
+        /* Separator Dots */
+        .separator-dots {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 8px; /* Space between the dots */
+        }
+
+        .separator-dots .dot {
+            width: 4px;
+            height: 4px;
+            background-color: var(--block-bg-color); /* Same color as time zone blocks */
+            border-radius: 50%;
+        }
+
         /* Delete Button */
         .delete-btn {
             position: absolute;
@@ -452,18 +468,6 @@
                 <option value="Etc/GMT-6">UTC+06:00 (Bangladesh Standard Time)</option>
                 <option value="Etc/GMT-7">UTC+07:00 (Indochina Time)</option>
                 <option value="Etc/GMT-8">UTC+08:00 (China Standard Time)</option>
-                <option value="Etc/GMT-9">UTC+09:00 (Japan Standard Time)</option>
-                <option value="Etc/GMT-10">UTC+10:00 (Australian Eastern Standard Time)</option>
-                <option value="Etc/GMT-11">UTC+11:00 (Solomon Islands Time)</option>
-                <option value="Etc/GMT-1">UTC+01:00 (Central European Time)</option>
-                <option value="Etc/GMT-2">UTC+02:00 (Eastern European Time)</option>
-                <option value="Etc/GMT-3">UTC+03:00 (East Africa Time)</option>
-                <option value="Etc/GMT-4">UTC+04:00 (Gulf Standard Time)</option>
-                <option value="Etc/GMT-5">UTC+05:00 (Pakistan Standard Time)</option>
-                <option value="Etc/GMT-6">UTC+06:00 (Bangladesh Standard Time)</option>
-                <option value="Etc/GMT-7">UTC+07:00 (Indochina Time)</option>
-                <option value="Etc/GMT-8">UTC+08:00 (China Standard Time)</option>
-                <option value="Etc/GMT-9">UTC+09:00 (Japan Standard Time)</option>
                 <option value="Etc/GMT-10">UTC+10:00 (Australian Eastern Standard Time)</option>
                 <option value="Etc/GMT-11">UTC+11:00 (Solomon Islands Time)</option>
                 <option value="Etc/GMT-12">UTC+12:00 (New Zealand Standard Time)</option>
@@ -721,6 +725,10 @@
                         <div class="flap over front"></div>
                         <div class="flap over back"></div>
                         <div class="flap under"></div>
+                    </div>
+                    <div class="separator-dots">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
                     </div>
                     <div class="digit tensec">
                         <span class="base">0</span>
