@@ -382,22 +382,6 @@
             }
         }
 
-        /* Separator Dots */
-        .separator-dots {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 8px; /* Space between the dots */
-        }
-
-        .separator-dots .dot {
-            width: 4px;
-            height: 4px;
-            background-color: var(--block-bg-color); /* Same color as time zone blocks */
-            border-radius: 50%;
-        }
-
         /* Delete Button */
         .delete-btn {
             position: absolute;
@@ -675,7 +659,6 @@
         // Load saved time zones from localStorage
         let savedTimeZones = JSON.parse(localStorage.getItem('timeZones')) || [];
         savedTimeZones.forEach(({ timeZone, displayName }) => addTimeZone(timeZone, displayName));
-
         // Add a new time zone
         confirmTimezoneButton.addEventListener('click', () => {
             const selectedTimeZone = timezoneSelect.value;
@@ -732,10 +715,6 @@
                             <div class="flap over back"></div>
                             <div class="flap under"></div>
                         </div>
-                    </div>
-                    <div class="separator-dots">
-                        <div class="dot"></div>
-                        <div class="dot"></div>
                     </div>
                     <div class="group">
                         <div class="digit tensec">
