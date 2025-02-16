@@ -9,7 +9,6 @@
     <style>
         :root {
             --time-color: #42526e; /* Time display color */
-            --label-text-color: #333; /* Separate label text color */
             --button-color: #0079bf;
             --block-bg-color: #ffffff;
             --title-text-color: #42526e;
@@ -278,10 +277,7 @@
             text-align: center;
             font-family: 'Oswald', sans-serif;
             font-size: 21px; /* Increased font size (150%) */
-        }
-
-        .am-pm-digit {
-            width: 15%; /* Slightly wider for AM/PM */
+            overflow: hidden; /* Ensure content stays within bounds */
         }
 
         .base {
@@ -311,6 +307,7 @@
             content: attr(data-content);
             position: absolute;
             left: 50%;
+            transform: translateX(-50%);
         }
 
         .flap.front::before,
@@ -939,7 +936,7 @@
             localStorage.setItem('theme', JSON.stringify(savedTheme));
         });
 
-        // Update time text color only
+        // Update time color only
         timeColorPicker.addEventListener('input', (event) => {
             const newTimeColor = event.target.value;
             document.documentElement.style.setProperty('--time-color', newTimeColor);
