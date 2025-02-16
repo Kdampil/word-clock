@@ -19,7 +19,6 @@
             --flipColourDark: #a6a6a6; /* Flip clock dark color */
             --textColour: #333; /* Flip clock text color */
             --textColourDark: #555; /* Flip clock dark text color */
-            --title-font-size: 1.5rem; /* Default title font size */
         }
 
         * {
@@ -91,7 +90,7 @@
             outline: none;
             background: none;
             border: none;
-            font-size: var(--title-font-size);
+            font-size: 1.5rem;
             font-weight: 600;
             color: var(--title-text-color);
             text-align: center;
@@ -276,6 +275,10 @@
             font-size: 14px;
         }
 
+        .am-pm-digit {
+            width: 12%; /* Slightly wider for AM/PM */
+        }
+
         .base {
             display: block;
             position: absolute;
@@ -408,7 +411,8 @@
         <span></span> <!-- Placeholder for draggable area -->
         <div class="buttons">
             <button id="minimize-btn">−</button>
-        </button>
+            <button id="close-btn">×</button>
+        </div>
     </div>
 
     <!-- Header -->
@@ -481,15 +485,11 @@
                 <input type="color" id="title-text-color-picker" value="#42526e">
             </label>
             <label>
-                Title Font Size:
-                <input type="range" id="title-font-size-picker" min="1" max="3" step="0.1" value="1.5">
-            </label>
-            <label>
                 Time Block Title Color:
                 <input type="color" id="block-title-color-picker" value="#42526e">
             </label>
             <label>
-                Time Color:
+                Time Text Color:
                 <input type="color" id="time-color-picker" value="#42526e">
             </label>
             <label>
@@ -575,7 +575,6 @@
         const blockBgColorPicker = document.getElementById('block-bg-color-picker');
         const titleBarBgColorPicker = document.getElementById('title-bar-bg-color-picker'); // Title bar background color picker
         const titleTextColorPicker = document.getElementById('title-text-color-picker');
-        const titleFontSizePicker = document.getElementById('title-font-size-picker');
         const blockTitleColorPicker = document.getElementById('block-title-color-picker');
         const timeColorPicker = document.getElementById('time-color-picker');
         const flipBaseColorPicker = document.getElementById('flip-base-color-picker');
@@ -603,7 +602,6 @@
                 blockBgColor: '#ffffff',
                 titleBarBgColor: '#f5f5f7', // Default title bar background color
                 titleTextColor: '#42526e',
-                titleFontSize: '1.5rem',
                 blockTitleColor: '#42526e',
                 timeColor: '#42526e',
                 flipBaseColor: '#fff',
@@ -619,7 +617,6 @@
             document.documentElement.style.setProperty('--block-bg-color', defaultTheme.blockBgColor);
             document.documentElement.style.setProperty('--title-bar-bg-color', defaultTheme.titleBarBgColor); // Apply title bar background color
             document.documentElement.style.setProperty('--title-text-color', defaultTheme.titleTextColor);
-            document.documentElement.style.setProperty('--title-font-size', defaultTheme.titleFontSize);
             document.documentElement.style.setProperty('--block-title-color', defaultTheme.blockTitleColor);
             document.documentElement.style.setProperty('--time-color', defaultTheme.timeColor);
             document.documentElement.style.setProperty('--flipColour', defaultTheme.flipBaseColor);
@@ -633,7 +630,6 @@
             blockBgColorPicker.value = defaultTheme.blockBgColor;
             titleBarBgColorPicker.value = defaultTheme.titleBarBgColor; // Reset title bar background color picker
             titleTextColorPicker.value = defaultTheme.titleTextColor;
-            titleFontSizePicker.value = parseFloat(defaultTheme.titleFontSize);
             blockTitleColorPicker.value = defaultTheme.blockTitleColor;
             timeColorPicker.value = defaultTheme.timeColor;
             flipBaseColorPicker.value = defaultTheme.flipBaseColor;
@@ -727,7 +723,12 @@
                         <div class="flap over back"></div>
                         <div class="flap under"></div>
                     </div>
-                    <span class="am-pm">AM</span>
+                    <div class="digit am-pm-digit">
+                        <span class="base">AM</span>
+                        <div class="flap over front"></div>
+                        <div class="flap over back"></div>
+                        <div class="flap under"></div>
+                    </div>
                 </div>
                 <button class="delete-btn" onclick="deleteTimeZone('${timeZone}')">&times;</button>
             `;
@@ -781,8 +782,8 @@
             updateGroup(tzDiv.querySelector('.tensec'), Math.floor(seconds / 10));
             updateGroup(tzDiv.querySelector('.sec'), seconds % 10);
 
-            // Update AM/PM indicator
-            tzDiv.querySelector('.am-pm').textContent = period;
+            // Update AM/PM digit
+            updateGroup(tzDiv.querySelector('.am-pm-digit'), period);
         }
 
         // Helper function to update a group of digits
@@ -828,7 +829,6 @@
             blockBgColor: '#ffffff',
             titleBarBgColor: '#f5f5f7', // Default title bar background color
             titleTextColor: '#42526e',
-            titleFontSize: '1.5rem',
             blockTitleColor: '#42526e',
             timeColor: '#42526e',
             flipBaseColor: '#fff',
@@ -844,7 +844,6 @@
         document.documentElement.style.setProperty('--block-bg-color', savedTheme.blockBgColor);
         document.documentElement.style.setProperty('--title-bar-bg-color', savedTheme.titleBarBgColor); // Apply title bar background color
         document.documentElement.style.setProperty('--title-text-color', savedTheme.titleTextColor);
-        document.documentElement.style.setProperty('--title-font-size', savedTheme.titleFontSize);
         document.documentElement.style.setProperty('--block-title-color', savedTheme.blockTitleColor);
         document.documentElement.style.setProperty('--time-color', savedTheme.timeColor);
         document.documentElement.style.setProperty('--flipColour', savedTheme.flipBaseColor);
@@ -896,14 +895,6 @@
             const newTitleTextColor = event.target.value;
             document.documentElement.style.setProperty('--title-text-color', newTitleTextColor);
             savedTheme.titleTextColor = newTitleTextColor;
-            localStorage.setItem('theme', JSON.stringify(savedTheme));
-        });
-
-        // Update title font size
-        titleFontSizePicker.addEventListener('input', (event) => {
-            const newTitleFontSize = `${event.target.value}rem`;
-            document.documentElement.style.setProperty('--title-font-size', newTitleFontSize);
-            savedTheme.titleFontSize = newTitleFontSize;
             localStorage.setItem('theme', JSON.stringify(savedTheme));
         });
 
