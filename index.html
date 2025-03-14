@@ -174,6 +174,80 @@
             font-family: 'Inter', sans-serif;
         }
 
+        /* DST Toggle Switch */
+        .dst-toggle {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+            padding: 5px 0;
+        }
+
+        .dst-toggle label {
+            margin-right: 10px;
+            color: var(--label-text-color);
+            font-size: 0.9rem;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--button-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        .dst-status {
+            display: inline-block;
+            font-size: 0.8rem;
+            margin-left: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            background-color: #f0f0f0;
+            color: var(--label-text-color);
+        }
+
+        .dst-active {
+            background-color: #e1f5fe;
+            color: #0288d1;
+        }
+
         .timezone-dropdown button,
         .theme-dropdown button {
             padding: 10px;
@@ -471,7 +545,33 @@
                 <option value="Etc/GMT-12">UTC+12:00 (New Zealand Standard Time)</option>
                 <option value="Etc/GMT-13">UTC+13:00 (Tonga Time)</option>
                 <option value="Etc/GMT-14">UTC+14:00 (Line Islands Time)</option>
+                <!-- Added named time zones that observe DST -->
+                <option value="America/New_York">America/New_York (Eastern Time)</option>
+                <option value="America/Chicago">America/Chicago (Central Time)</option>
+                <option value="America/Denver">America/Denver (Mountain Time)</option>
+                <option value="America/Los_Angeles">America/Los_Angeles (Pacific Time)</option>
+                <option value="America/Anchorage">America/Anchorage (Alaska Time)</option>
+                <option value="America/Honolulu">America/Honolulu (Hawaii Time)</option>
+                <option value="Europe/London">Europe/London (British Time)</option>
+                <option value="Europe/Paris">Europe/Paris (Central European Time)</option>
+                <option value="Europe/Berlin">Europe/Berlin (Central European Time)</option>
+                <option value="Europe/Athens">Europe/Athens (Eastern European Time)</option>
+                <option value="Asia/Tokyo">Asia/Tokyo (Japan Time)</option>
+                <option value="Australia/Sydney">Australia/Sydney (Australian Eastern Time)</option>
+                <option value="Australia/Melbourne">Australia/Melbourne (Australian Eastern Time)</option>
+                <option value="Australia/Perth">Australia/Perth (Australian Western Time)</option>
             </select>
+            
+            <!-- DST Toggle Switch -->
+            <div class="dst-toggle">
+                <label for="dst-toggle">Auto-adjust for DST:</label>
+                <label class="switch">
+                    <input type="checkbox" id="dst-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+                <span id="dst-info" class="dst-status">Auto</span>
+            </div>
+            
             <button id="confirm-timezone">Add</button>
         </div>
 
@@ -595,6 +695,19 @@
         const flipTextColorPicker = document.getElementById('flip-text-color-picker');
         const flipDarkTextColorPicker = document.getElementById('flip-dark-text-color-picker');
         const restoreBtn = document.getElementById('restore-btn');
+        const dstToggle = document.getElementById('dst-toggle');
+        const dstInfo = document.getElementById('dst-info');
+
+        // DST Toggle Event Listener
+        dstToggle.addEventListener('change', () => {
+            if (dstToggle.checked) {
+                dstInfo.textContent = "Auto";
+                dstInfo.classList.remove('dst-active');
+            } else {
+                dstInfo.textContent = "Manual";
+                dstInfo.classList.add('dst-active');
+            }
+        });
 
         // Toggle dropdown visibility
         addBtn.addEventListener('click', () => {
@@ -669,12 +782,27 @@
 
         // Load saved time zones from localStorage
         let savedTimeZones = JSON.parse(localStorage.getItem('timeZones')) || [];
-        savedTimeZones.forEach(({ timeZone, displayName }) => addTimeZone(timeZone, displayName));
+        
+        // Update the structure to include DST preference
+        savedTimeZones = savedTimeZones.map(tz => {
+            // If the time zone doesn't have a DST preference yet, add it with default value (true)
+            if (tz.useDST === undefined) {
+                return { ...tz, useDST: true };
+            }
+            return tz;
+        });
+        
+        // Save the updated structure back to localStorage
+        localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
+        
+        // Add saved time zones to the UI
+        savedTimeZones.forEach(({ timeZone, displayName, useDST }) => addTimeZone(timeZone, displayName, useDST));
 
         // Add a new time zone
         confirmTimezoneButton.addEventListener('click', () => {
             const selectedTimeZone = timezoneSelect.value;
             const optionText = timezoneSelect.options[timezoneSelect.selectedIndex].text;
+            const useDST = dstToggle.checked;
 
             // Extract just the descriptive name (e.g., "Hawaii-Aleutian Standard Time")
             const displayName = optionText.split(' (')[1]?.slice(0, -1) || optionText;
@@ -682,23 +810,34 @@
             // Check if the time zone already exists
             const exists = savedTimeZones.some((tz) => tz.timeZone === selectedTimeZone);
             if (!exists) {
-                const newTimeZone = { timeZone: selectedTimeZone, displayName };
+                const newTimeZone = { timeZone: selectedTimeZone, displayName, useDST };
                 savedTimeZones.push(newTimeZone);
                 localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
-                addTimeZone(selectedTimeZone, displayName);
+                addTimeZone(selectedTimeZone, displayName, useDST);
             }
 
             timezoneDropdown.style.display = 'none'; // Hide dropdown after adding
         });
 
         // Function to add a time zone to the UI
-        function addTimeZone(timeZone, displayName) {
+        function addTimeZone(timeZone, displayName, useDST = true) {
             const timeZoneDiv = document.createElement('div');
             timeZoneDiv.classList.add('time-zone');
             timeZoneDiv.dataset.timeZone = timeZone;
+            timeZoneDiv.dataset.useDST = useDST;
+
+            // Add DST indicator to the display if it's a named time zone that can observe DST
+            const isDSTCapable = !timeZone.startsWith('Etc/');
+            const dstIndicator = isDSTCapable ? 
+                `<span class="dst-status ${useDST ? 'dst-active' : ''}" title="${useDST ? 'Auto-adjusts for DST' : 'DST adjustment disabled'}">
+                    ${useDST ? '🔄 DST' : '⏱️ STD'}
+                </span>` : '';
 
             timeZoneDiv.innerHTML = `
-                <h2><span contenteditable="true" class="editable-name">${displayName}</span></h2>
+                <h2>
+                    <span contenteditable="true" class="editable-name">${displayName}</span>
+                    ${dstIndicator}
+                </h2>
                 <div class="clock">
                     <div class="digit tenhour">
                         <span class="base">0</span>
@@ -746,6 +885,35 @@
                 <button class="delete-btn" onclick="deleteTimeZone('${timeZone}')">&times;</button>
             `;
 
+            // Add DST toggle functionality if it's a named time zone
+            if (isDSTCapable) {
+                const dstStatus = timeZoneDiv.querySelector('.dst-status');
+                if (dstStatus) {
+                    dstStatus.addEventListener('click', () => {
+                        const currentUseDST = timeZoneDiv.dataset.useDST === 'true';
+                        const newUseDST = !currentUseDST;
+                        
+                        // Update the UI
+                        timeZoneDiv.dataset.useDST = newUseDST;
+                        dstStatus.textContent = newUseDST ? '🔄 DST' : '⏱️ STD';
+                        dstStatus.title = newUseDST ? 'Auto-adjusts for DST' : 'DST adjustment disabled';
+                        
+                        if (newUseDST) {
+                            dstStatus.classList.add('dst-active');
+                        } else {
+                            dstStatus.classList.remove('dst-active');
+                        }
+                        
+                        // Update in saved time zones
+                        const timeZoneIndex = savedTimeZones.findIndex((tz) => tz.timeZone === timeZone);
+                        if (timeZoneIndex !== -1) {
+                            savedTimeZones[timeZoneIndex].useDST = newUseDST;
+                            localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
+                        }
+                    });
+                }
+            }
+
             const editableNameSpan = timeZoneDiv.querySelector('.editable-name');
             editableNameSpan.addEventListener('blur', () => {
                 const updatedDisplayName = editableNameSpan.textContent;
@@ -774,14 +942,78 @@
         function updateTime() {
             document.querySelectorAll('.time-zone').forEach((tzDiv) => {
                 const timeZone = tzDiv.dataset.timeZone;
-                updateTimeForTimeZone(tzDiv, timeZone);
+                const useDST = tzDiv.dataset.useDST === 'true';
+                updateTimeForTimeZone(tzDiv, timeZone, useDST);
             });
         }
 
+        // Function to check if a time zone is currently in DST
+        function isInDST(timeZone) {
+            // Create two dates: one in winter, one in summer
+            const winterDate = new Date(new Date().getFullYear(), 0, 1);
+            const summerDate = new Date(new Date().getFullYear(), 6, 1);
+            
+            // Get the UTC offset for both dates in the given time zone
+            const winterOffset = getTimezoneOffset(winterDate, timeZone);
+            const summerOffset = getTimezoneOffset(summerDate, timeZone);
+            
+            // If the offsets are different, the time zone observes DST
+            // To determine if we're currently in DST, compare current offset with winter offset
+            if (winterOffset !== summerOffset) {
+                const currentOffset = getTimezoneOffset(new Date(), timeZone);
+                return currentOffset !== winterOffset;
+            }
+            
+            // If winter and summer offsets are the same, this time zone doesn't observe DST
+            return false;
+        }
+
+        // Helper function to get timezone offset in minutes
+        function getTimezoneOffset(date, timeZone) {
+            const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
+            const tzDate = new Date(date.toLocaleString('en-US', { timeZone }));
+            return (utcDate - tzDate) / 60000;
+        }
+
         // Function to update time for a specific time zone
-        function updateTimeForTimeZone(tzDiv, timeZone) {
+        function updateTimeForTimeZone(tzDiv, timeZone, useDST = true) {
             const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', { timeZone, hour12: true });
+            
+            // For Etc/* time zones or when DST is disabled, use the fixed offset
+            let options = { timeZone, hour12: true };
+            
+            // For named time zones that can observe DST, check if we should use DST
+            if (!timeZone.startsWith('Etc/')) {
+                // If DST is disabled for this time zone, we need to use a fixed offset
+                if (!useDST) {
+                    // Get the standard time offset (non-DST)
+                    const winterDate = new Date(new Date().getFullYear(), 0, 1);
+                    const standardTimeString = winterDate.toLocaleTimeString('en-US', { timeZone, hour12: true });
+                    
+                    // Extract the UTC offset from the standard time
+                    const stdOffset = getTimezoneOffset(winterDate, timeZone);
+                    
+                    // Convert minutes to hours and format as +/-HH:00
+                    const offsetHours = Math.abs(Math.floor(stdOffset / 60));
+                    const offsetSign = stdOffset > 0 ? '-' : '+';
+                    const fixedTimeZone = `Etc/GMT${offsetSign}${offsetHours}`;
+                    
+                    // Use the fixed offset time zone instead
+                    options.timeZone = fixedTimeZone;
+                }
+                
+                // Update DST indicator if present
+                const dstIndicator = tzDiv.querySelector('.dst-status');
+                if (dstIndicator && useDST) {
+                    const currentlyInDST = isInDST(timeZone);
+                    dstIndicator.textContent = currentlyInDST ? '☀️ DST' : '🔄 STD';
+                    dstIndicator.title = currentlyInDST ? 
+                        'Currently observing Daylight Saving Time' : 
+                        'Currently observing Standard Time';
+                }
+            }
+            
+            const timeString = now.toLocaleTimeString('en-US', options);
 
             // Extract hours, minutes, seconds, and AM/PM
             const [time, period] = timeString.split(' ');
