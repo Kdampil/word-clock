@@ -443,7 +443,6 @@
         <button class="add-btn" id="add-btn">🌐</button>
         <button class="gear-btn" id="gear-btn">⚙️</button>
         <button class="pin-btn" id="pin-btn">📌</button>
-
         <!-- Time Zone Dropdown -->
         <div class="timezone-dropdown" id="timezone-dropdown">
             <select id="timezone-select">
@@ -459,7 +458,6 @@
                     <option value="Canada/Mountain">Regina (Mountain Time)</option>
                     <option value="Canada/Pacific">Vancouver (Pacific Time)</option>
                 </optgroup>
-
                 <!-- Europe & Africa -->
                 <optgroup label="Europe & Africa">
                     <option value="Europe/London">London (GMT / BST)</option>
@@ -469,7 +467,6 @@
                     <option value="Africa/Cairo">Cairo (Egypt Time)</option>
                     <option value="Africa/Johannesburg">Johannesburg (South Africa)</option>
                 </optgroup>
-
                 <!-- Asia -->
                 <optgroup label="Asia">
                     <option value="Asia/Dubai">Dubai (GST - UTC+4)</option>
@@ -478,7 +475,6 @@
                     <option value="Asia/Tokyo">Tokyo (JST - UTC+9)</option>
                     <option value="Asia/Singapore">Singapore (SGT - UTC+8)</option>
                 </optgroup>
-
                 <!-- Australia & Pacific -->
                 <optgroup label="Australia & Pacific">
                     <option value="Australia/Sydney">Sydney (AEST / AEDT)</option>
@@ -487,7 +483,6 @@
                     <option value="Pacific/Honolulu">Honolulu (HST - No DST)</option>
                 </optgroup>
             </select>
-
             <!-- DST Toggle Switch -->
             <div class="dst-toggle">
                 <label for="dst-toggle">Auto-adjust for DST:</label>
@@ -499,336 +494,257 @@
             </div>
             <button id="confirm-timezone">Add</button>
         </div>
+<script>
+    const { ipcRenderer } = require('electron');
 
-        <!-- Theme Dropdown -->
-        <div class="theme-dropdown" id="theme-dropdown">
-            <label>Background Color:
-                <input type="color" id="bg-color-picker" value="#f5f5f7">
-            </label>
-            <label>Button Color:
-                <input type="color" id="button-color-picker" value="#0079bf">
-            </label>
-            <label>Time Block Background:
-                <input type="color" id="block-bg-color-picker" value="#ffffff">
-            </label>
-            <label>Title Bar Background:
-                <input type="color" id="title-bar-bg-color-picker" value="#f5f5f7">
-            </label>
-            <label>Title Text Color:
-                <input type="color" id="title-text-color-picker" value="#42526e">
-            </label>
-            <label>Time Block Title Color:
-                <input type="color" id="block-title-color-picker" value="#42526e">
-            </label>
-            <label>Time Text Color:
-                <input type="color" id="time-color-picker" value="#42526e">
-            </label>
-            <label>Flip Clock Base Color:
-                <input type="color" id="flip-base-color-picker" value="#fff">
-            </label>
-            <label>Flip Clock Dark Color:
-                <input type="color" id="flip-dark-color-picker" value="#a6a6a6">
-            </label>
-            <label>Flip Clock Text Color:
-                <input type="color" id="flip-text-color-picker" value="#333">
-            </label>
-            <label>Flip Clock Dark Text Color:
-                <input type="color" id="flip-dark-text-color-picker" value="#555">
-            </label>
-            <button id="restore-btn" style="margin-top: 10px;">↻ Restore Defaults</button>
-        </div>
-    </div>
+    // Minimize and Close Buttons
+    document.getElementById('minimize-btn').addEventListener('click', () => {
+        ipcRenderer.send('minimize-window');
+    });
+    document.getElementById('close-btn').addEventListener('click', () => {
+        ipcRenderer.send('close-window');
+    });
 
-    <main>
-        <div class="time-zone-container" id="time-zone-container"></div>
-    </main>
+    // Pin Window Button
+    const pinBtn = document.getElementById('pin-btn');
+    pinBtn.addEventListener('click', () => {
+        const isActive = pinBtn.classList.toggle('active');
+        pinBtn.textContent = isActive ? '📍' : '📌';
+        ipcRenderer.send('set-always-on-top', isActive);
+    });
 
-    <script>
-        const { ipcRenderer } = require('electron');
+    // Editable Title Logic
+    const editableTitle = document.getElementById('editable-title');
+    editableTitle.addEventListener('click', () => {
+        if (editableTitle.textContent === "🌍 World Clock") editableTitle.textContent = "";
+        editableTitle.contentEditable = true;
+        editableTitle.focus();
+    });
+    editableTitle.addEventListener('blur', () => {
+        editableTitle.contentEditable = false;
+        if (!editableTitle.textContent.trim()) editableTitle.textContent = "🌍 World Clock";
+        localStorage.setItem('title', editableTitle.textContent);
+    });
+    const savedTitle = localStorage.getItem('title');
+    if (savedTitle) editableTitle.textContent = savedTitle;
 
-        // Minimize and Close Buttons
-        document.getElementById('minimize-btn').addEventListener('click', () => ipcRenderer.send('minimize-window'));
-        document.getElementById('close-btn').addEventListener('click', () => ipcRenderer.send('close-window'));
-
-        // Pin Window Button
-        const pinBtn = document.getElementById('pin-btn');
-        pinBtn.addEventListener('click', () => {
-            const isActive = pinBtn.classList.toggle('active');
-            pinBtn.textContent = isActive ? '📍' : '📌';
-            ipcRenderer.send('set-always-on-top', isActive);
-        });
-
-        // Editable Title Logic
-        const editableTitle = document.getElementById('editable-title');
-        editableTitle.addEventListener('click', () => {
-            if (editableTitle.textContent === "🌍 World Clock") editableTitle.textContent = "";
-            editableTitle.contentEditable = true;
-            editableTitle.focus();
-        });
-        editableTitle.addEventListener('blur', () => {
-            editableTitle.contentEditable = false;
-            if (!editableTitle.textContent.trim()) editableTitle.textContent = "🌍 World Clock";
-            localStorage.setItem('title', editableTitle.textContent);
-        });
-        const savedTitle = localStorage.getItem('title');
-        if (savedTitle) editableTitle.textContent = savedTitle;
-
-        // Dropdowns
-        const addBtn = document.getElementById('add-btn');
-        const gearBtn = document.getElementById('gear-btn');
-        const timezoneDropdown = document.getElementById('timezone-dropdown');
-        const themeDropdown = document.getElementById('theme-dropdown');
-
-        addBtn.addEventListener('click', () => {
-            timezoneDropdown.style.display = timezoneDropdown.style.display === 'block' ? 'none' : 'block';
-            themeDropdown.style.display = 'none';
-        });
-        gearBtn.addEventListener('click', () => {
-            themeDropdown.style.display = themeDropdown.style.display === 'block' ? 'none' : 'block';
+    // Dropdowns
+    const addBtn = document.getElementById('add-btn');
+    const gearBtn = document.getElementById('gear-btn');
+    const timezoneDropdown = document.getElementById('timezone-dropdown');
+    const themeDropdown = document.getElementById('theme-dropdown');
+    addBtn.addEventListener('click', () => {
+        timezoneDropdown.style.display = timezoneDropdown.style.display === 'block' ? 'none' : 'block';
+        themeDropdown.style.display = 'none';
+    });
+    gearBtn.addEventListener('click', () => {
+        themeDropdown.style.display = themeDropdown.style.display === 'block' ? 'none' : 'block';
+        timezoneDropdown.style.display = 'none';
+    });
+    // Hide dropdowns when clicking outside
+    document.addEventListener('click', (event) => {
+        if (!timezoneDropdown.contains(event.target) && event.target !== addBtn)
             timezoneDropdown.style.display = 'none';
-        });
+        if (!themeDropdown.contains(event.target) && event.target !== gearBtn)
+            themeDropdown.style.display = 'none';
+    });
 
-        // Hide dropdowns when clicking outside
-        document.addEventListener('click', (event) => {
-            if (!timezoneDropdown.contains(event.target) && event.target !== addBtn)
-                timezoneDropdown.style.display = 'none';
-            if (!themeDropdown.contains(event.target) && event.target !== gearBtn)
-                themeDropdown.style.display = 'none';
-        });
+    // DST Toggle
+    const dstToggle = document.getElementById('dst-toggle');
+    const dstInfo = document.getElementById('dst-info');
+    dstToggle.addEventListener('change', () => {
+        dstInfo.textContent = dstToggle.checked ? '🔄 Manual' : '☀️ Auto';
+        dstInfo.classList.toggle('dst-active');
+    });
 
-        // DST Toggle
-        const dstToggle = document.getElementById('dst-toggle');
-        const dstInfo = document.getElementById('dst-info');
-        dstToggle.addEventListener('change', () => {
-            dstInfo.textContent = dstToggle.checked ? '🔄 Manual' : '☀️ Auto';
-            dstInfo.classList.toggle('dst-active');
-        });
+    // Load saved time zones
+    let savedTimeZones = JSON.parse(localStorage.getItem('timeZones')) || [];
+    // Add saved time zones to UI
+    savedTimeZones.forEach(tz => addTimeZone(tz.timeZone, tz.displayName, tz.useDST));
+    // Confirm new time zone
+    document.getElementById('confirm-timezone').addEventListener('click', () => {
+        const selected = document.getElementById('timezone-select');
+        const timeZone = selected.value;
+        const optionText = selected.options[selected.selectedIndex].text;
+        const useDST = dstToggle.checked;
+        const displayName = optionText.split('(')[0].trim();
+        if (!savedTimeZones.some(tz => tz.timeZone === timeZone)) {
+            const newTz = { timeZone, displayName, useDST };
+            savedTimeZones.push(newTz);
+            localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
+            addTimeZone(timeZone, displayName, useDST);
+            timezoneDropdown.style.display = 'none';
+        }
+    });
 
-        // Load saved time zones
-        let savedTimeZones = JSON.parse(localStorage.getItem('timeZones')) || [];
-
-        // Add saved time zones to UI
-        savedTimeZones.forEach(tz => addTimeZone(tz.timeZone, tz.displayName, tz.useDST));
-
-        // Confirm new time zone
-        document.getElementById('confirm-timezone').addEventListener('click', () => {
-            const selected = document.getElementById('timezone-select');
-            const timeZone = selected.value;
-            const optionText = selected.options[selected.selectedIndex].text;
-            const useDST = dstToggle.checked;
-            const displayName = optionText.split('(')[0].trim();
-
-            if (!savedTimeZones.some(tz => tz.timeZone === timeZone)) {
-                const newTz = { timeZone, displayName, useDST };
-                savedTimeZones.push(newTz);
-                localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
-                addTimeZone(timeZone, displayName, useDST);
-                timezoneDropdown.style.display = 'none';
-            }
-        });
-
-        // Function to add a time zone to the UI
-        function addTimeZone(timeZone, displayName, useDST) {
-            const container = document.createElement('div');
-            container.className = 'time-zone';
-            container.dataset.timeZone = timeZone;
-            container.dataset.useDST = useDST;
-
-            const isDSTCapable = !timeZone.startsWith('Etc/');
-            const dstIndicator = isDSTCapable ?
-                `<span class="dst-status ${useDST ? 'dst-active' : ''}" title="${useDST ? 'Auto-adjusts for DST' : 'DST disabled'}">
-                    ${useDST ? '🔄 DST' : '⏱️ STD'}
-                </span>` : '';
-
-            container.innerHTML = `
-                <h2><span contenteditable="true" class="editable-name">${displayName}</span>${dstIndicator}</h2>
-                <div class="clock">
-                    <div class="digit tenhour"><span class="base">0</span><div class="flap over front"></div><div class="flap over back"></div><div class="flap under"></div></div>
-                    <div class="digit hour"><span class="base">0</span><div class="flap over front"></div><div class="flap over back"></div><div class="flap under"></div></div>
-                    <div class="digit tenmin"><span class="base">0</span><div class="flap over front"></div><div class="flap over back"></div><div class="flap under"></div></div>
-                    <div class="digit min"><span class="base">0</span><div class="flap over front"></div><div class="flap over back"></div><div class="flap under"></div></div>
-                    <div class="digit tensec"><span class="base">0</span><div class="flap over front"></div><div class="flap over back"></div><div class="flap under"></div></div>
-                    <div class="digit sec"><span class="base">0</span><div class="flap over front"></div><div class="flap over back"></div><div class="flap under"></div></div>
-                    <div class="digit am-pm-digit"><span class="base">AM</span><div class="flap over front"></div><div class="flap over back"></div><div class="flap under"></div></div>
-                    <button class="delete-btn">&times;</button>
-                </div>
-            `;
-
-            // DST toggle click
-            const dstStatus = container.querySelector('.dst-status');
-            if (isDSTCapable && dstStatus) {
-                dstStatus.addEventListener('click', () => {
-                    const current = container.dataset.useDST === 'true';
-                    container.dataset.useDST = !current;
-                    dstStatus.textContent = current ? '🔄 DST' : '⏱️ STD';
-                    dstStatus.title = current ? 'DST disabled' : 'Auto-adjusts for DST';
-                    dstStatus.classList.toggle('dst-active');
-                    savedTimeZones.find(tz => tz.timeZone === timeZone).useDST = !current;
-                    localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
-                });
-            }
-
-            // Save edited display name
-            const nameSpan = container.querySelector('.editable-name');
-            nameSpan.addEventListener('blur', () => {
-                savedTimeZones.find(tz => tz.timeZone === timeZone).displayName = nameSpan.textContent;
+    // Function to add a time zone to the UI
+    function addTimeZone(timeZone, displayName, useDST) {
+        const container = document.createElement('div');
+        container.className = 'time-zone';
+        container.dataset.timeZone = timeZone;
+        container.dataset.useDST = useDST;
+        const isDSTCapable = !timeZone.startsWith('Etc/');
+        const dstIndicator = isDSTCapable ?
+            `<span class="dst-status ${useDST ? 'dst-active' : ''}" title="${useDST ? 'Auto-adjusts for DST' : 'DST disabled'}">
+                ${useDST ? '🔄 DST' : '⏱️ STD'}
+            </span>` : '';
+        container.innerHTML = `
+            <h2><span contenteditable="true" class="editable-name">${displayName}</span>${dstIndicator}</h2>
+            <div class="clock">
+                <div class="digit tenhour"><span class="base">0</span><div class="flap over front"></div><div class="flap over back"></div><div class="flap under"></div></div>
+                <div class="digit hour"><span class="base">0</span><div class="flap over front"></div><div class="flap over back"></div><div class="flap under"></div></div>
+                <div class="digit tenmin"><span class="base">0</span><div class="flap over front"></div><div class="flap over back"></div><div class="flap under"></div></div>
+                <div class="digit min"><span class="base">0</span><div class="flap over front"></div><div class="flap over back"></div><div class="flap under"></div></div>
+                <div class="digit tensec"><span class="base">0</span><div class="flap over front"></div><div class="flap over back"></div><div class="flap under"></div></div>
+                <div class="digit sec"><span class="base">0</span><div class="flap over front"></div><div class="flap over back"></div><div class="flap under"></div></div>
+                <div class="digit am-pm-digit"><span class="base">AM</span><div class="flap over front"></div><div class="flap over back"></div><div class="flap under"></div></div>
+                <button class="delete-btn">&times;</button>
+            </div>
+        `;
+        // DST toggle click
+        const dstStatus = container.querySelector('.dst-status');
+        if (isDSTCapable && dstStatus) {
+            dstStatus.addEventListener('click', () => {
+                const current = container.dataset.useDST === 'true';
+                container.dataset.useDST = !current;
+                dstStatus.textContent = current ? '🔄 DST' : '⏱️ STD';
+                dstStatus.title = current ? 'DST disabled' : 'Auto-adjusts for DST';
+                dstStatus.classList.toggle('dst-active');
+                savedTimeZones.find(tz => tz.timeZone === timeZone).useDST = !current;
                 localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
             });
-
-            // Delete time zone
-            container.querySelector('.delete-btn').addEventListener('click', () => {
-                savedTimeZones = savedTimeZones.filter(tz => tz.timeZone !== timeZone);
-                localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
-                container.remove();
-            });
-
-            document.getElementById('time-zone-container').appendChild(container);
-            updateTimeForTimeZone(container, timeZone, useDST);
         }
-
-        // Update time for all time zones every second
-        setInterval(() => {
-            document.querySelectorAll('.time-zone').forEach(div => {
-                const tz = div.dataset.timeZone;
-                const useDST = div.dataset.useDST === 'true';
-                updateTimeForTimeZone(div, tz, useDST);
-            });
-        }, 1000);
-
-        // Helper: Get timezone offset
-        function getTimezoneOffset(date, timeZone) {
-            return (new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }) - new Date(date.toLocaleString('en-US', { timeZone }))) / 60000;
-        }
-
-        // Helper: Check if in DST
-        function isInDST(timeZone) {
-            const winter = new Date(new Date().getFullYear(), 0, 1);
-            const summer = new Date(new Date().getFullYear(), 6, 1);
-            return getTimezoneOffset(winter, timeZone) !== getTimezoneOffset(summer, timeZone);
-        }
-
-        // Function to update time for a specific time zone
-        function updateTimeForTimeZone(container, timeZone, useDST) {
-            const now = new Date();
-            let options = { timeZone, hour12: true };
-
-            // If manual mode, use standard offset
-            if (!useDST && !timeZone.startsWith('Etc/')) {
-                const stdOffset = getTimezoneOffset(new Date(now.getFullYear(), 0, 1), timeZone);
-                const offsetHours = Math.abs(Math.floor(stdOffset / 60));
-                const sign = stdOffset > 0 ? '-' : '+';
-                options.timeZone = `Etc/GMT${sign}${offsetHours}`;
-            }
-
-            try {
-                const timeString = now.toLocaleTimeString('en-US', options);
-                const [time, period] = timeString.split(' ');
-                const [hours, minutes, seconds] = time.split(':').map(Number);
-                updateDigit(container, '.tenhour', Math.floor(hours / 10));
-                updateDigit(container, '.hour', hours % 10);
-                updateDigit(container, '.tenmin', Math.floor(minutes / 10));
-                updateDigit(container, '.min', minutes % 10);
-                updateDigit(container, '.tensec', Math.floor(seconds / 10));
-                updateDigit(container, '.sec', seconds % 10);
-                updateDigit(container, '.am-pm-digit', period);
-            } catch (e) {
-                console.error("Failed to update time:", e);
-            }
-
-            // Update DST indicator
-            if (container.querySelector('.dst-status') && useDST && isInDST(timeZone)) {
-                const currentHour = now.getHours();
-                const isDST = currentHour !== now.toLocaleTimeString('en-US', { timeZone }).split(':')[0];
-                container.querySelector('.dst-status').textContent = isDST ? '☀️ DST' : '🔄 STD';
-            }
-        }
-
-        // Helper: Update digit with flip animation
-        function updateDigit(container, selector, n) {
-            const el = container.querySelector(selector);
-            const current = el.getAttribute('data-num');
-            if (current !== String(n)) {
-                el.setAttribute('data-num', n);
-                flipTo(el, n);
-            }
-        }
-
-        function flipTo(digit, n) {
-            const front = digit.querySelector('.front');
-            const back = digit.querySelector('.back');
-            const under = digit.querySelector('.under');
-            front.setAttribute('data-content', digit.querySelector('.base').textContent);
-            back.setAttribute('data-content', n);
-            under.setAttribute('data-content', n);
-            digit.querySelectorAll('.flap').forEach(f => f.style.display = 'block');
-            setTimeout(() => {
-                digit.querySelector('.base').textContent = n;
-                digit.querySelectorAll('.flap').forEach(f => f.style.display = 'none');
-            }, 350);
-        }
-
-        // Theme Customization
-        const themeInputs = {
-            bg: '#f5f5f7',
-            button: '#0079bf',
-            blockBg: '#ffffff',
-            titleBarBg: '#f5f5f7',
-            titleText: '#42526e',
-            blockTitle: '#42526e',
-            timeColor: '#42526e',
-            flipBase: '#fff',
-            flipDark: '#a6a6a6',
-            flipText: '#333',
-            flipDarkText: '#555'
-        };
-
-        // Apply saved theme
-        const savedTheme = JSON.parse(localStorage.getItem('theme')) || themeInputs;
-        Object.entries(savedTheme).forEach(([key, value]) => {
-            if (key.includes('flip')) {
-                document.documentElement.style.setProperty(`--${key}`, value);
-            }
+        // Save edited display name
+        const nameSpan = container.querySelector('.editable-name');
+        nameSpan.addEventListener('blur', () => {
+            savedTimeZones.find(tz => tz.timeZone === timeZone).displayName = nameSpan.textContent;
+            localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
         });
-        document.body.style.backgroundColor = savedTheme.bg;
-        document.documentElement.style.setProperty('--button-color', savedTheme.button);
-        document.documentElement.style.setProperty('--block-bg-color', savedTheme.blockBg);
-        document.documentElement.style.setProperty('--title-bar-bg-color', savedTheme.titleBarBg);
-        document.documentElement.style.setProperty('--title-text-color', savedTheme.titleText);
-        document.documentElement.style.setProperty('--block-title-color', savedTheme.blockTitle);
-        document.documentElement.style.setProperty('--time-color', savedTheme.timeColor);
-
-        // Theme Picker Event Listeners
-        Object.keys(themeInputs).forEach(key => {
-            const input = document.getElementById(`${key}-picker`);
-            if (input) {
-                input.value = savedTheme[key];
-                input.addEventListener('input', (e) => {
-                    const val = e.target.value;
-                    if (key === 'bg') document.body.style.backgroundColor = val;
-                    else if (key === 'button') {
-                        document.documentElement.style.setProperty('--button-color', val);
-                        document.documentElement.style.setProperty('--primary-hover-color', shadeColor(val, -10));
-                    }
-                    else if (key === 'blockBg') document.documentElement.style.setProperty('--block-bg-color', val);
-                    else if (key === 'titleBarBg') document.documentElement.style.setProperty('--title-bar-bg-color', val);
-                    else if (key === 'titleText') document.documentElement.style.setProperty('--title-text-color', val);
-                    else if (key === 'blockTitle') document.documentElement.style.setProperty('--block-title-color', val);
-                    else if (key === 'timeColor') document.documentElement.style.setProperty('--time-color', val);
-                    else if (key === 'flipBase') document.documentElement.style.setProperty('--flipColour', val);
-                    else if (key === 'flipDark') document.documentElement.style.setProperty('--flipColourDark', val);
-                    else if (key === 'flipText') document.documentElement.style.setProperty('--textColour', val);
-                    else if (key === 'flipDarkText') document.documentElement.style.setProperty('--textColourDark', val);
-                    savedTheme[key] = val;
-                    localStorage.setItem('theme', JSON.stringify(savedTheme));
-                    updateButtonColors();
-                });
-            }
+        // Delete time zone
+        container.querySelector('.delete-btn').addEventListener('click', () => {
+            savedTimeZones = savedTimeZones.filter(tz => tz.timeZone !== timeZone);
+            localStorage.setItem('timeZones', JSON.stringify(savedTimeZones));
+            container.remove();
         });
+        document.getElementById('time-zone-container').appendChild(container);
+        updateTimeForTimeZone(container, timeZone, useDST);
+    }
 
-        // Restore Default Theme
-        document.getElementById('restore-btn').addEventListener('click', () => {
-            Object.entries(themeInputs).forEach(([key, val]) {
-                document.getElementById(`${key}-picker`).value = val;
+    // Update time for all time zones every second
+    setInterval(() => {
+        document.querySelectorAll('.time-zone').forEach(div => {
+            const tz = div.dataset.timeZone;
+            const useDST = div.dataset.useDST === 'true';
+            updateTimeForTimeZone(div, tz, useDST);
+        });
+    }, 1000);
+
+    // Helper: Get timezone offset
+    function getTimezoneOffset(date, timeZone) {
+        return (new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }) - new Date(date.toLocaleString('en-US', { timeZone }))) / 60000;
+    }
+
+    // Helper: Check if in DST
+    function isInDST(timeZone) {
+        const winter = new Date(new Date().getFullYear(), 0, 1);
+        const summer = new Date(new Date().getFullYear(), 6, 1);
+        return getTimezoneOffset(winter, timeZone) !== getTimezoneOffset(summer, timeZone);
+    }
+
+    // Function to update time for a specific time zone
+    function updateTimeForTimeZone(container, timeZone, useDST) {
+        const now = new Date();
+        let options = { timeZone, hour12: true };
+        // If manual mode, use standard offset
+        if (!useDST && !timeZone.startsWith('Etc/')) {
+            const stdOffset = getTimezoneOffset(new Date(now.getFullYear(), 0, 1), timeZone);
+            const offsetHours = Math.abs(Math.floor(stdOffset / 60));
+            const sign = stdOffset > 0 ? '-' : '+';
+            options.timeZone = `Etc/GMT${sign}${offsetHours}`;
+        }
+        try {
+            const timeString = now.toLocaleTimeString('en-US', options);
+            const [time, period] = timeString.split(' ');
+            const [hours, minutes, seconds] = time.split(':').map(Number);
+            updateDigit(container, '.tenhour', Math.floor(hours / 10));
+            updateDigit(container, '.hour', hours % 10);
+            updateDigit(container, '.tenmin', Math.floor(minutes / 10));
+            updateDigit(container, '.min', minutes % 10);
+            updateDigit(container, '.tensec', Math.floor(seconds / 10));
+            updateDigit(container, '.sec', seconds % 10);
+            updateDigit(container, '.am-pm-digit', period);
+        } catch (e) {
+            console.error("Failed to update time:", e);
+        }
+        // Update DST indicator
+        if (container.querySelector('.dst-status') && useDST && isInDST(timeZone)) {
+            const currentHour = now.getHours();
+            const isDST = currentHour !== now.toLocaleTimeString('en-US', { timeZone }).split(':')[0];
+            container.querySelector('.dst-status').textContent = isDST ? '☀️ DST' : '🔄 STD';
+        }
+    }
+
+    // Helper: Update digit with flip animation
+    function updateDigit(container, selector, n) {
+        const el = container.querySelector(selector);
+        const current = el.getAttribute('data-num');
+        if (current !== String(n)) {
+            el.setAttribute('data-num', n);
+            flipTo(el, n);
+        }
+    }
+
+    function flipTo(digit, n) {
+        const front = digit.querySelector('.front');
+        const back = digit.querySelector('.back');
+        const under = digit.querySelector('.under');
+        front.setAttribute('data-content', digit.querySelector('.base').textContent);
+        back.setAttribute('data-content', n);
+        under.setAttribute('data-content', n);
+        digit.querySelectorAll('.flap').forEach(f => f.style.display = 'block');
+        setTimeout(() => {
+            digit.querySelector('.base').textContent = n;
+            digit.querySelectorAll('.flap').forEach(f => f.style.display = 'none');
+        }, 350);
+    }
+
+    // Theme Customization
+    const themeInputs = {
+        bg: '#f5f5f7',
+        button: '#0079bf',
+        blockBg: '#ffffff',
+        titleBarBg: '#f5f5f7',
+        titleText: '#42526e',
+        blockTitle: '#42526e',
+        timeColor: '#42526e',
+        flipBase: '#fff',
+        flipDark: '#a6a6a6',
+        flipText: '#333',
+        flipDarkText: '#555'
+    };
+
+    // Apply saved theme
+    const savedTheme = JSON.parse(localStorage.getItem('theme')) || themeInputs;
+    Object.entries(savedTheme).forEach(([key, value]) => {
+        if (key.includes('flip')) {
+            document.documentElement.style.setProperty(`--${key}`, value);
+        }
+    });
+    document.body.style.backgroundColor = savedTheme.bg;
+    document.documentElement.style.setProperty('--button-color', savedTheme.button);
+    document.documentElement.style.setProperty('--block-bg-color', savedTheme.blockBg);
+    document.documentElement.style.setProperty('--title-bar-bg-color', savedTheme.titleBarBg);
+    document.documentElement.style.setProperty('--title-text-color', savedTheme.titleText);
+    document.documentElement.style.setProperty('--block-title-color', savedTheme.blockTitle);
+    document.documentElement.style.setProperty('--time-color', savedTheme.timeColor);
+
+    // Theme Picker Event Listeners
+    Object.keys(themeInputs).forEach(key => {
+        const input = document.getElementById(`${key}-picker`);
+        if (input) {
+            input.value = savedTheme[key];
+            input.addEventListener('input', (e) => {
+                const val = e.target.value;
                 if (key === 'bg') document.body.style.backgroundColor = val;
                 else if (key === 'button') {
                     document.documentElement.style.setProperty('--button-color', val);
@@ -843,174 +759,187 @@
                 else if (key === 'flipDark') document.documentElement.style.setProperty('--flipColourDark', val);
                 else if (key === 'flipText') document.documentElement.style.setProperty('--textColour', val);
                 else if (key === 'flipDarkText') document.documentElement.style.setProperty('--textColourDark', val);
-            });
-            updateButtonColors();
-            localStorage.setItem('theme', JSON.stringify(themeInputs));
-        });
-
-        // Utility: Shade color
-        function shadeColor(color, percent) {
-            const num = parseInt(color.replace('#', ''), 16),
-                amt = Math.round(2.55 * percent),
-                R = (num >> 16) + amt,
-                G = ((num >> 8) & 0x00ff) + amt,
-                B = (num & 0x0000ff) + amt;
-            return `#${(R < 255 ? R < 1 ? 0 : R : 255).toString(16)}${(G < 255 ? G < 1 ? 0 : G : 255).toString(16)}${(B < 255 ? B < 1 ? 0 : B : 255).toString(16)}`;
-        }
-
-        // Update button colors based on title bar background
-        function updateButtonColors() {
-            const titleBarBg = getComputedStyle(document.documentElement).getPropertyValue('--title-bar-bg-color').trim();
-            document.getElementById('minimize-btn').style.color = invertColor(titleBarBg);
-            document.getElementById('close-btn').style.color = invertColor(titleBarBg);
-        }
-
-        // Helper function to invert a color
-        function invertColor(hex) {
-            hex = hex.replace('#', '');
-            const r = (255 - parseInt(hex.slice(0, 2), 16)).toString(16).padStart(2, '0');
-            const g = (255 - parseInt(hex.slice(2, 4), 16)).toString(16).padStart(2, '0');
-            const b = (255 - parseInt(hex.slice(4, 6), 16)).toString(16).padStart(2, '0');
-            return `#${r}${g}${b}`;
-        }
-
-        // Update button colors based on title bar background
-        function updateButtonColors() {
-            const titleBarBg = getComputedStyle(document.documentElement).getPropertyValue('--title-bar-bg-color').trim();
-            document.getElementById('minimize-btn').style.color = invertColor(titleBarBg);
-            document.getElementById('close-btn').style.color = invertColor(titleBarBg);
-        }
-
-        // Initialize button colors on load
-        updateButtonColors();
-
-        // Load saved theme or apply defaults
-        const savedTheme = JSON.parse(localStorage.getItem('theme')) || {
-            bg: '#f5f5f7',
-            button: '#0079bf',
-            blockBg: '#ffffff',
-            titleBarBg: '#f5f5f7',
-            titleText: '#42526e',
-            blockTitle: '#42526e',
-            timeColor: '#42526e',
-            flipBase: '#fff',
-            flipDark: '#a6a6a6',
-            flipText: '#333',
-            flipDarkText: '#555'
-        };
-
-        // Apply saved theme
-        Object.entries(savedTheme).forEach(([key, value]) => {
-            if (key === 'bg') document.body.style.backgroundColor = value;
-            else if (key === 'button') {
-                document.documentElement.style.setProperty('--button-color', value);
-                document.documentElement.style.setProperty('--primary-hover-color', shadeColor(value, -10));
-            }
-            else if (key === 'blockBg') document.documentElement.style.setProperty('--block-bg-color', value);
-            else if (key === 'titleBarBg') {
-                document.documentElement.style.setProperty('--title-bar-bg-color', value);
-            }
-            else if (key === 'titleText') document.documentElement.style.setProperty('--title-text-color', value);
-            else if (key === 'blockTitle') document.documentElement.style.setProperty('--block-title-color', value);
-            else if (key === 'timeColor') document.documentElement.style.setProperty('--time-color', value);
-            else if (key === 'flipBase') document.documentElement.style.setProperty('--flipColour', value);
-            else if (key === 'flipDark') document.documentElement.style.setProperty('--flipColourDark', value);
-            else if (key === 'flipText') document.documentElement.style.setProperty('--textColour', value);
-            else if (key === 'flipDarkText') document.documentElement.style.setProperty('--textColourDark', value);
-
-            const input = document.getElementById(`${key}-picker`);
-            if (input) input.value = value;
-        });
-
-        // Add event listeners for theme customization
-        const themeInputs = {
-            bg: '#f5f5f7',
-            button: '#0079bf',
-            blockBg: '#ffffff',
-            titleBarBg: '#f5f5f7',
-            titleText: '#42526e',
-            blockTitle: '#42526e',
-            timeColor: '#42526e',
-            flipBase: '#fff',
-            flipDark: '#a6a6a6',
-            flipText: '#333',
-            flipDarkText: '#555'
-        };
-
-        Object.keys(themeInputs).forEach(key => {
-            const input = document.getElementById(`${key}-picker`);
-            if (!input) return;
-
-            input.addEventListener('input', (e) => {
-                const val = e.target.value;
-                if (key === 'bg') document.body.style.backgroundColor = val;
-                else if (key === 'button') {
-                    document.documentElement.style.setProperty('--button-color', val);
-                    document.documentElement.style.setProperty('--primary-hover-color', shadeColor(val, -10));
-                }
-                else if (key === 'blockBg') document.documentElement.style.setProperty('--block-bg-color', val);
-                else if (key === 'titleBarBg') {
-                    document.documentElement.style.setProperty('--title-bar-bg-color', val);
-                    updateButtonColors(); // Update minimize/close button colors
-                }
-                else if (key === 'titleText') document.documentElement.style.setProperty('--title-text-color', val);
-                else if (key === 'blockTitle') document.documentElement.style.setProperty('--block-title-color', val);
-                else if (key === 'timeColor') document.documentElement.style.setProperty('--time-color', val);
-                else if (key === 'flipBase') document.documentElement.style.setProperty('--flipColour', val);
-                else if (key === 'flipDark') document.documentElement.style.setProperty('--flipColourDark', val);
-                else if (key === 'flipText') document.documentElement.style.setProperty('--textColour', val);
-                else if (key === 'flipDarkText') document.documentElement.style.setProperty('--textColourDark', val);
-
                 savedTheme[key] = val;
                 localStorage.setItem('theme', JSON.stringify(savedTheme));
+                updateButtonColors();
             });
-        });
-
-        // Restore default theme
-        document.getElementById('restore-btn').addEventListener('click', () => {
-            Object.entries(themeInputs).forEach(([key, val]) => {
-                document.getElementById(`${key}-picker`).value = val;
-                if (key === 'bg') document.body.style.backgroundColor = val;
-                else if (key === 'button') {
-                    document.documentElement.style.setProperty('--button-color', val);
-                    document.documentElement.style.setProperty('--primary-hover-color', shadeColor(val, -10));
-                }
-                else if (key === 'blockBg') document.documentElement.style.setProperty('--block-bg-color', val);
-                else if (key === 'titleBarBg') {
-                    document.documentElement.style.setProperty('--title-bar-bg-color', val);
-                    updateButtonColors();
-                }
-                else if (key === 'titleText') document.documentElement.style.setProperty('--title-text-color', val);
-                else if (key === 'blockTitle') document.documentElement.style.setProperty('--block-title-color', val);
-                else if (key === 'timeColor') document.documentElement.style.setProperty('--time-color', val);
-                else if (key === 'flipBase') document.documentElement.style.setProperty('--flipColour', val);
-                else if (key === 'flipDark') document.documentElement.style.setProperty('--flipColourDark', val);
-                else if (key === 'flipText') document.documentElement.style.setProperty('--textColour', val);
-                else if (key === 'flipDarkText') document.documentElement.style.setProperty('--textColourDark', val);
-            });
-            localStorage.setItem('theme', JSON.stringify(themeInputs));
-            updateButtonColors();
-        });
-
-        // Function to check if in DST
-        function isInDST(timeZone) {
-            const winter = new Date(new Date().getFullYear(), 0, 1);
-            const summer = new Date(new Date().getFullYear(), 6, 1);
-            return getTimezoneOffset(winter, timeZone) !== getTimezoneOffset(summer, timeZone);
         }
+    });
 
-        // Initial call to set time
-        updateTime();
+    // Restore Default Theme
+    document.getElementById('restore-btn').addEventListener('click', () => {
+        Object.entries(themeInputs).forEach(([key, val]) => {
+            document.getElementById(`${key}-picker`).value = val;
+            if (key === 'bg') document.body.style.backgroundColor = val;
+            else if (key === 'button') {
+                document.documentElement.style.setProperty('--button-color', val);
+                document.documentElement.style.setProperty('--primary-hover-color', shadeColor(val, -10));
+            }
+            else if (key === 'blockBg') document.documentElement.style.setProperty('--block-bg-color', val);
+            else if (key === 'titleBarBg') document.documentElement.style.setProperty('--title-bar-bg-color', val);
+            else if (key === 'titleText') document.documentElement.style.setProperty('--title-text-color', val);
+            else if (key === 'blockTitle') document.documentElement.style.setProperty('--block-title-color', val);
+            else if (key === 'timeColor') document.documentElement.style.setProperty('--time-color', val);
+            else if (key === 'flipBase') document.documentElement.style.setProperty('--flipColour', val);
+            else if (key === 'flipDark') document.documentElement.style.setProperty('--flipColourDark', val);
+            else if (key === 'flipText') document.documentElement.style.setProperty('--textColour', val);
+            else if (key === 'flipDarkText') document.documentElement.style.setProperty('--textColourDark', val);
+        });
+        updateButtonColors();
+        localStorage.setItem('theme', JSON.stringify(themeInputs));
+    });
 
-        // Update every second
-        setInterval(() => {
-            document.querySelectorAll('.time-zone').forEach(div => {
-                const tz = div.dataset.timeZone;
-                const useDST = div.dataset.useDST === 'true';
-                updateTimeForTimeZone(div, tz, useDST);
-            });
-        }, 1000);
+    // Utility: Shade color
+    function shadeColor(color, percent) {
+        const num = parseInt(color.replace('#', ''), 16),
+            amt = Math.round(2.55 * percent),
+            R = (num >> 16) + amt,
+            G = ((num >> 8) & 0x00ff) + amt,
+            B = (num & 0x0000ff) + amt;
+        return `#${(R < 255 ? R < 1 ? 0 : R : 255).toString(16)}${(G < 255 ? G < 1 ? 0 : G : 255).toString(16)}${(B < 255 ? B < 1 ? 0 : B : 255).toString(16)}`;
+    }
 
-    </script>
+    // Update button colors based on title bar background
+    function updateButtonColors() {
+        const titleBarBg = getComputedStyle(document.documentElement).getPropertyValue('--title-bar-bg-color').trim();
+        document.getElementById('minimize-btn').style.color = invertColor(titleBarBg);
+        document.getElementById('close-btn').style.color = invertColor(titleBarBg);
+    }
+
+    // Helper function to invert a color
+    function invertColor(hex) {
+        hex = hex.replace('#', '');
+        const r = (255 - parseInt(hex.slice(0, 2), 16)).toString(16).padStart(2, '0');
+        const g = (255 - parseInt(hex.slice(2, 4), 16)).toString(16).padStart(2, '0');
+        const b = (255 - parseInt(hex.slice(4, 6), 16)).toString(16).padStart(2, '0');
+        return `#${r}${g}${b}`;
+    }
+
+    // Initialize button colors on load
+    updateButtonColors();
+
+    // Load saved theme or apply defaults
+    const savedTheme = JSON.parse(localStorage.getItem('theme')) || {
+        bg: '#f5f5f7',
+        button: '#0079bf',
+        blockBg: '#ffffff',
+        titleBarBg: '#f5f5f7',
+        titleText: '#42526e',
+        blockTitle: '#42526e',
+        timeColor: '#42526e',
+        flipBase: '#fff',
+        flipDark: '#a6a6a6',
+        flipText: '#333',
+        flipDarkText: '#555'
+    };
+
+    // Apply saved theme
+    Object.entries(savedTheme).forEach(([key, value]) => {
+        if (key === 'bg') document.body.style.backgroundColor = value;
+        else if (key === 'button') {
+            document.documentElement.style.setProperty('--button-color', value);
+            document.documentElement.style.setProperty('--primary-hover-color', shadeColor(value, -10));
+        }
+        else if (key === 'blockBg') document.documentElement.style.setProperty('--block-bg-color', value);
+        else if (key === 'titleBarBg') {
+            document.documentElement.style.setProperty('--title-bar-bg-color', value);
+        }
+        else if (key === 'titleText') document.documentElement.style.setProperty('--title-text-color', value);
+        else if (key === 'blockTitle') document.documentElement.style.setProperty('--block-title-color', value);
+        else if (key === 'timeColor') document.documentElement.style.setProperty('--time-color', value);
+        else if (key === 'flipBase') document.documentElement.style.setProperty('--flipColour', value);
+        else if (key === 'flipDark') document.documentElement.style.setProperty('--flipColourDark', value);
+        else if (key === 'flipText') document.documentElement.style.setProperty('--textColour', value);
+        else if (key === 'flipDarkText') document.documentElement.style.setProperty('--textColourDark', value);
+        const input = document.getElementById(`${key}-picker`);
+        if (input) input.value = value;
+    });
+
+    // Add event listeners for theme customization
+    const themeInputs = {
+        bg: '#f5f5f7',
+        button: '#0079bf',
+        blockBg: '#ffffff',
+        titleBarBg: '#f5f5f7',
+        titleText: '#42526e',
+        blockTitle: '#42526e',
+        timeColor: '#42526e',
+        flipBase: '#fff',
+        flipDark: '#a6a6a6',
+        flipText: '#333',
+        flipDarkText: '#555'
+    };
+    Object.keys(themeInputs).forEach(key => {
+        const input = document.getElementById(`${key}-picker`);
+        if (!input) return;
+        input.addEventListener('input', (e) => {
+            const val = e.target.value;
+            if (key === 'bg') document.body.style.backgroundColor = val;
+            else if (key === 'button') {
+                document.documentElement.style.setProperty('--button-color', val);
+                document.documentElement.style.setProperty('--primary-hover-color', shadeColor(val, -10));
+            }
+            else if (key === 'blockBg') document.documentElement.style.setProperty('--block-bg-color', val);
+            else if (key === 'titleBarBg') {
+                document.documentElement.style.setProperty('--title-bar-bg-color', val);
+                updateButtonColors(); // Update minimize/close button colors
+            }
+            else if (key === 'titleText') document.documentElement.style.setProperty('--title-text-color', val);
+            else if (key === 'blockTitle') document.documentElement.style.setProperty('--block-title-color', val);
+            else if (key === 'timeColor') document.documentElement.style.setProperty('--time-color', val);
+            else if (key === 'flipBase') document.documentElement.style.setProperty('--flipColour', val);
+            else if (key === 'flipDark') document.documentElement.style.setProperty('--flipColourDark', val);
+            else if (key === 'flipText') document.documentElement.style.setProperty('--textColour', val);
+            else if (key === 'flipDarkText') document.documentElement.style.setProperty('--textColourDark', val);
+            savedTheme[key] = val;
+            localStorage.setItem('theme', JSON.stringify(savedTheme));
+        });
+    });
+
+    // Restore default theme
+    document.getElementById('restore-btn').addEventListener('click', () => {
+        Object.entries(themeInputs).forEach(([key, val]) => {
+            document.getElementById(`${key}-picker`).value = val;
+            if (key === 'bg') document.body.style.backgroundColor = val;
+            else if (key === 'button') {
+                document.documentElement.style.setProperty('--button-color', val);
+                document.documentElement.style.setProperty('--primary-hover-color', shadeColor(val, -10));
+            }
+            else if (key === 'blockBg') document.documentElement.style.setProperty('--block-bg-color', val);
+            else if (key === 'titleBarBg') {
+                document.documentElement.style.setProperty('--title-bar-bg-color', val);
+                updateButtonColors();
+            }
+            else if (key === 'titleText') document.documentElement.style.setProperty('--title-text-color', val);
+            else if (key === 'blockTitle') document.documentElement.style.setProperty('--block-title-color', val);
+            else if (key === 'timeColor') document.documentElement.style.setProperty('--time-color', val);
+            else if (key === 'flipBase') document.documentElement.style.setProperty('--flipColour', val);
+            else if (key === 'flipDark') document.documentElement.style.setProperty('--flipColourDark', val);
+            else if (key === 'flipText') document.documentElement.style.setProperty('--textColour', val);
+            else if (key === 'flipDarkText') document.documentElement.style.setProperty('--textColourDark', val);
+        });
+        localStorage.setItem('theme', JSON.stringify(themeInputs));
+        updateButtonColors();
+    });
+
+    // Function to check if in DST
+    function isInDST(timeZone) {
+        const winter = new Date(new Date().getFullYear(), 0, 1);
+        const summer = new Date(new Date().getFullYear(), 6, 1);
+        return getTimezoneOffset(winter, timeZone) !== getTimezoneOffset(summer, timeZone);
+    }
+
+    // Initial call to set time
+    updateTime();
+
+    // Update every second
+    setInterval(() => {
+        document.querySelectorAll('.time-zone').forEach(div => {
+            const tz = div.dataset.timeZone;
+            const useDST = div.dataset.useDST === 'true';
+            updateTimeForTimeZone(div, tz, useDST);
+        });
+    }, 1000);
+</script>
 </body>
 </html>
